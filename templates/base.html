@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AttendX - QR Code Attendance System">
+    <meta name="author" content="AttendX Team">
+    
+    <title>{% block title %}AttendX{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link href="{% static 'css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dark_mode.css' %}" rel="stylesheet">
+    <link href="{% static 'css/themes.css' %}" rel="stylesheet">
+    <link href="{% static 'css/animations.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if request.user.is_authenticated or request.session.is_student %}dashboard-body{% endif %}">
+    <!-- Prevent theme flash: apply saved accent color before render -->
+    <script>
+        (function() {
+            var accent = localStorage.getItem('attendx-accent-color') || 'indigo';
+            document.body.setAttribute('data-theme', accent);
+        })();
+    </script>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- Page Loading Bar -->
+    <div class="page-loading-bar" id="pageLoadingBar"></div>
+    {% if request.user.is_authenticated or request.session.is_student %}
+        {% include 'includes/navbar.html' %}
+        {% include 'includes/sidebar.html' %}
+        
+        <main class="main-content">
+            <div class="container-fluid">
+                {% include 'includes/messages.html' %}
+                
+                <div class="content-wrapper">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+        
+        {% include 'includes/footer.html' %}
+    {% else %}
+        {% block full_page %}
+        <div class="auth-wrapper">
+            <div class="auth-container">
+                {% block auth_content %}{% endblock %}
+            </div>
+        </div>
+        {% endblock %}
+    {% endif %}
+    
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    
+    <!-- jQuery (optional, for AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

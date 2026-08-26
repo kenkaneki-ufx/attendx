@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Portal - AttendX{% endblock %}
+
+{% block auth_content %}
+<div class="text-center mb-4">
+    <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+    <h2>Student Portal</h2>
+    <p class="text-muted">Enter your roll number to check your attendance</p>
+</div>
+
+<form method="get" class="mb-4">
+    <div class="input-group input-group-lg">
+        <span class="input-group-text"><i class="fas fa-search"></i></span>
+        <input type="text" name="roll_number" class="form-control" 
+               placeholder="Enter your roll number (e.g., CSE001)" 
+               value="{{ roll_number }}" autofocus>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-check me-1"></i> Check
+        </button>
+    </div>
+</form>
+
+{% if not roll_number %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> Enter your roll number above to check your attendance.
+</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-danger">
+    <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+</div>
+{% endif %}
+
+{% if student %}
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-user me-2"></i> {{ student.get_full_name }}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-1"><strong>Roll Number:</strong> {{ student.roll_number }}</p>
+                <p class="mb-1"><strong>Registration:</strong> {{ student.registration_number }}</p>
+                <p class="mb-0"><strong>Section:</strong> {{ student.section.name }}</p>
+            </div>
+            <div class="col-md-6">
+                <p class="mb-1"><strong>Branch:</strong> {{ student.section.branch.name }}</p>
+                <p class="mb-1"><strong>Department:</strong> {{ student.section.branch.department.name }}</p>
+                <p class="mb-0"><strong>Semester:</strong> {{ student.section.semester }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="h3 text-primary mb-0">{{ total_lectures }}</div>
+                <small class="text-muted">Total Lectures</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="h3 text-success mb-0">{{ present_count }}</div>
+                <small class="text-muted">Present</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="h3 text-warning mb-0">{{ late_count }}</div>
+                <small class="text-muted">Late</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <div class="h3 {% if attendance_rate >= 75 %}text-success{% elif attendance_rate >= 50 %}text-warning{% else %}text-danger{% endif %} mb-0">
+                    {{ attendance_rate }}%
+                </div>
+                <small class="text-muted">Attendance Rate</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if records %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-history me-2"></i> Attendance History
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Subject</th>
+                        <th>Faculty</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.lecture.lecture_date|date:"M d, Y" }}</td>
+                        <td>{{ record.lecture.subject.code }} - {{ record.lecture.subject.name }}</td>
+                        <td>{{ record.lecture.faculty.get_full_name }}</td>
+                        <td>
+                            {% if record.status == 'PRESENT' %}
+                                <span class="badge bg-success">Present</span>
+                            {% elif record.status == 'LATE' %}
+                                <span class="badge bg-warning">Late</span>
+                            {% elif record.status == 'ABSENT' %}
+                                <span class="badge bg-danger">Absent</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ record.status }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i> No attendance records found for this student.
+</div>
+{% endif %}
+{% endif %}
+
+<div class="text-center mt-4">
+    <a href="{% url 'accounts:login' %}" class="text-decoration-none">
+        <i class="fas fa-sign-in-alt me-1"></i> Faculty Login
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-graduate me-2"></i> Student Portal
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="roll_number" class="form-control" 
+                               placeholder="Enter your roll number (e.g., CSE001)" 
+                               value="{{ roll_number }}" autofocus>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check me-1"></i> Check
+                        </button>
+                    </div>
+                </form>
+
+                {% if not roll_number %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i> Enter your roll number above to check your attendance.
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <div class="alert alert-danger mb-0">
+                    <i class="fas fa-exclamation-circle me-2"></i> {{ error }}
+                </div>
+                {% endif %}
+
+                {% if student %}
+                <div class="mb-3">
+                    <h5>{{ student.get_full_name }}</h5>
+                    <p class="text-muted mb-1">Roll: {{ student.roll_number }} | Section: {{ student.section.name }} | {{ student.section.branch.department.name }}</p>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h4 text-primary mb-0">{{ total_lectures }}</div>
+                                <small class="text-muted">Total</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h4 text-success mb-0">{{ present_count }}</div>
+                                <small class="text-muted">Present</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h4 text-warning mb-0">{{ late_count }}</div>
+                                <small class="text-muted">Late</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body py-2">
+                                <div class="h4 {% if attendance_rate >= 75 %}text-success{% elif attendance_rate >= 50 %}text-warning{% else %}text-danger{% endif %} mb-0">
+                                    {{ attendance_rate }}%
+                                </div>
+                                <small class="text-muted">Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if records %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Subject</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in records %}
+                            <tr>
+                                <td>{{ record.lecture.lecture_date|date:"M d, Y" }}</td>
+                                <td>{{ record.lecture.subject.code }}</td>
+                                <td>
+                                    {% if record.status == 'PRESENT' %}
+                                        <span class="badge bg-success">Present</span>
+                                    {% elif record.status == 'LATE' %}
+                                        <span class="badge bg-warning">Late</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Absent</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

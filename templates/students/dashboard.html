@@ -1,0 +1,338 @@
+{% extends 'base.html' %}
+
+{% block title %}My Dashboard - AttendX{% endblock %}
+
+{% block extra_css %}
+<style>
+    .welcome-banner {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        border-radius: 16px;
+        padding: 30px;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    .welcome-banner h3 { font-weight: 700; margin-bottom: 5px; }
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    }
+    .stat-card .icon-box {
+        width: 50px; height: 50px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .chart-card {
+        border: none; border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .chart-card .card-header {
+        background: transparent;
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+        font-weight: 600;
+    }
+    .subject-row {
+        padding: 10px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .subject-row:last-child { border-bottom: none; }
+    .rate-badge {
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    .progress-thin { height: 6px; border-radius: 3px; }
+    .lecture-item {
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        margin-bottom: 8px;
+        transition: all 0.2s;
+    }
+    .lecture-item:hover {
+        border-color: #0d6efd;
+        background: #f8f9ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="welcome-banner">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="mb-1">Welcome, {{ student.first_name }}! 👋</h3>
+            <p class="mb-0 opacity-75">
+                {{ student.roll_number }} &middot; 
+                {{ student.section.branch.department.name }} - 
+                {{ student.section.branch.name }} - 
+                {{ student.section.name }}
+            </p>
+        </div>
+        <a href="{% url 'students:student_logout' %}" class="btn btn-outline-light">
+            <i class="fas fa-sign-out-alt me-1"></i> Logout
+        </a>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="icon-box" style="background: rgba(13,110,253,0.12); color: #0d6efd;">
+                    <i class="fas fa-calendar-check fa-lg"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0">{{ total_lectures }}</h4>
+                    <small class="text-muted">Total Lectures</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="icon-box" style="background: rgba(40,167,69,0.12); color: #28a745;">
+                    <i class="fas fa-user-check fa-lg"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0">{{ present_count }}</h4>
+                    <small class="text-muted">Present</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="icon-box" style="background: rgba(255,193,7,0.12); color: #ffc107;">
+                    <i class="fas fa-clock fa-lg"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0">{{ late_count }}</h4>
+                    <small class="text-muted">Late</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="icon-box" style="background: {% if attendance_rate >= 75 %}rgba(40,167,69,0.12); color: #28a745;{% elif attendance_rate >= 60 %}rgba(255,193,7,0.12); color: #ffc107;{% else %}rgba(220,53,69,0.12); color: #dc3545;{% endif %}">
+                    <i class="fas fa-percentage fa-lg"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0">{{ attendance_rate }}%</h4>
+                    <small class="text-muted">Attendance Rate</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Subject-wise Attendance -->
+    <div class="col-lg-6">
+        <div class="card chart-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-book me-2 text-primary"></i>Subject-wise Attendance</h6>
+            </div>
+            <div class="card-body">
+                {% if subject_data %}
+                    {% for subject in subject_data %}
+                    <div class="subject-row">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div>
+                                <span class="fw-medium">{{ subject.code }}</span>
+                                <small class="text-muted ms-1">{{ subject.name }}</small>
+                            </div>
+                            <span class="rate-badge {% if subject.rate >= 75 %}bg-success-subtle text-success{% elif subject.rate >= 60 %}bg-warning-subtle text-warning{% else %}bg-danger-subtle text-danger{% endif %}">
+                                {{ subject.rate }}%
+                            </span>
+                        </div>
+                        <div class="progress progress-thin">
+                            <div class="progress-bar {% if subject.rate >= 75 %}bg-success{% elif subject.rate >= 60 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 style="width: {{ subject.rate }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ subject.present }}/{{ subject.total }} lectures</small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-4">No subject data yet</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Weekly Trend -->
+    <div class="col-lg-6">
+        <div class="card chart-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-chart-line me-2 text-primary"></i>Weekly Trend</h6>
+                <span class="badge bg-light text-muted">Last 7 days</span>
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Monthly Trend -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card chart-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-calendar-alt me-2 text-primary"></i>Monthly Trend</h6>
+                <span class="badge bg-light text-muted">Last 6 months</span>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Lectures -->
+    <div class="col-lg-4">
+        <div class="card chart-card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chalkboard me-2 text-primary"></i>Recent Lectures</h6>
+            </div>
+            <div class="card-body" style="max-height: 320px; overflow-y: auto;">
+                {% for lecture in recent_lectures %}
+                <div class="lecture-item">
+                    <div class="fw-medium" style="font-size: 0.9rem;">{{ lecture.subject.code }} - {{ lecture.subject.name }}</div>
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>{{ lecture.lecture_date|date:'M d, Y' }}
+                        &middot; {{ lecture.get_lecture_number_display }}
+                    </small>
+                    <div><small class="text-muted"><i class="fas fa-user me-1"></i>{{ lecture.faculty.get_full_name }}</small></div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-4">No recent lectures</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance History -->
+<div class="card chart-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="fas fa-history me-2 text-primary"></i>Attendance History</h6>
+        <span class="badge bg-primary">{{ records|length }} records</span>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Subject</th>
+                        <th>Faculty</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.lecture.lecture_date|date:'M d, Y' }}</td>
+                        <td>{{ record.lecture.subject.code }} - {{ record.lecture.subject.name }}</td>
+                        <td>{{ record.lecture.faculty.get_full_name }}</td>
+                        <td>
+                            {% if record.status == 'PRESENT' %}
+                            <span class="badge bg-success-subtle text-success">
+                                <i class="fas fa-check me-1"></i>Present
+                            </span>
+                            {% elif record.status == 'LATE' %}
+                            <span class="badge bg-warning-subtle text-warning">
+                                <i class="fas fa-clock me-1"></i>Late
+                            </span>
+                            {% elif record.status == 'ABSENT' %}
+                            <span class="badge bg-danger-subtle text-danger">
+                                <i class="fas fa-times me-1"></i>Absent
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary">
+                                {{ record.status }}
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No attendance records found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ week_data|json_script:"weeklyData" }}
+{{ monthly_data|json_script:"monthlyData" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+const colors = {
+    primary: 'rgba(13, 110, 253, 0.8)',
+    primaryBg: 'rgba(13, 110, 253, 0.1)',
+    success: 'rgba(40, 167, 69, 0.8)',
+    successBg: 'rgba(40, 167, 69, 0.1)',
+    warning: 'rgba(255, 193, 7, 0.8)',
+    danger: 'rgba(220, 53, 69, 0.8)',
+};
+
+// Weekly Trend Chart
+const weeklyData = JSON.parse(document.getElementById('weeklyData').textContent);
+new Chart(document.getElementById('weeklyChart'), {
+    type: 'bar',
+    data: {
+        labels: weeklyData.map(d => d.date),
+        datasets: [
+            { label: 'Present', data: weeklyData.map(d => d.present), backgroundColor: colors.success, borderRadius: 4, barPercentage: 0.6 },
+            { label: 'Late', data: weeklyData.map(d => d.late), backgroundColor: colors.warning, borderRadius: 4, barPercentage: 0.6 },
+            { label: 'Absent', data: weeklyData.map(d => d.absent), backgroundColor: colors.danger, borderRadius: 4, barPercentage: 0.6 }
+        ]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { usePointStyle: true, padding: 15 } } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } }
+    }
+});
+
+// Monthly Trend Chart
+const monthlyData = JSON.parse(document.getElementById('monthlyData').textContent);
+new Chart(document.getElementById('monthlyChart'), {
+    type: 'line',
+    data: {
+        labels: monthlyData.map(d => d.month),
+        datasets: [{
+            label: 'Attendance Rate %',
+            data: monthlyData.map(d => d.rate),
+            borderColor: colors.primary,
+            backgroundColor: colors.primaryBg,
+            fill: true, tension: 0.4,
+            pointBackgroundColor: colors.primary,
+            pointRadius: 5, pointHoverRadius: 7,
+        }]
+    },
+    options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `Rate: ${ctx.parsed.y}%` } } },
+        scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } }
+    }
+});
+</script>
+{% endblock %}

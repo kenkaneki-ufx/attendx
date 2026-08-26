@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "attendx"
+version = "1.0.0"
+description = "QR Code-based Attendance Management System"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "AttendX Team", email = "team@attendx.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "Django>=5.2,<6.0",
+    "dj-database-url>=2.1.0",
+    "qrcode[pil]>=7.4.2",
+    "Pillow>=10.2.0",
+    "reportlab>=4.1.0",
+    "openpyxl>=3.1.2",
+    "django-cors-headers>=4.3.0",
+    "whitenoise>=6.5.0",
+    "python-dotenv>=1.0.0",
+    "django-extensions>=3.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-django>=4.7.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.2.0",
+    "black>=24.1.0",
+    "isort>=5.13.0",
+    "django-debug-toolbar>=4.2.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 100

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}QR Display - AttendX{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h2 class="mb-4">QR Code Display</h2>
+    <p class="text-muted">Students can scan this QR code to mark attendance</p>
+
+    {% if qr_image %}
+    <div class="qr-container mx-auto" style="max-width: 500px;">
+        <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" class="img-fluid">
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

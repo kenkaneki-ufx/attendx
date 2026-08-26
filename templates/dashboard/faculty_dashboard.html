@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - AttendX{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1" style="font-weight: 700; letter-spacing: -0.02em;">Welcome back, {{ user.first_name|default:user.username }}!</h4>
+        <p class="mb-0" style="color: var(--text-secondary); font-size: 0.9rem;">
+            <i class="fas fa-calendar-day me-1"></i> {{ today|date:"l, F d, Y" }}
+        </p>
+    </div>
+    <a href="{% url 'lectures:start_lecture' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-1"></i> Start New Lecture
+    </a>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6 animate-on-scroll">
+        <div class="stat-card primary" style="padding: 22px;">
+            <i class="fas fa-chalkboard stat-icon"></i>
+            <div class="d-flex align-items-center gap-3">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                    <i class="fas fa-chalkboard"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ total_lectures_today }}</div>
+                    <div class="stat-label">Today's Lectures</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 animate-on-scroll">
+        <div class="stat-card success" style="padding: 22px;">
+            <i class="fas fa-user-check stat-icon"></i>
+            <div class="d-flex align-items-center gap-3">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ present_count }}</div>
+                    <div class="stat-label">Present Today</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 animate-on-scroll">
+        <div class="stat-card warning" style="padding: 22px;">
+            <i class="fas fa-clock stat-icon"></i>
+            <div class="d-flex align-items-center gap-3">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ late_count }}</div>
+                    <div class="stat-label">Late Today</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 animate-on-scroll">
+        <div class="stat-card info" style="padding: 22px;">
+            <i class="fas fa-chart-line stat-icon"></i>
+            <div class="d-flex align-items-center gap-3">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ week_rate }}%</div>
+                    <div class="stat-label">Weekly Attendance Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Lecture Alert -->
+{% if active_lecture %}
+<div class="alert alert-success d-flex align-items-center mb-4 animate-on-scroll" role="alert" style="border-radius: var(--radius-md); padding: 16px 20px;">
+    <div style="width: 40px; height: 40px; border-radius: 10px; background: var(--success-gradient); display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; flex-shrink: 0;">
+        <i class="fas fa-broadcast-tower"></i>
+    </div>
+    <div class="flex-grow-1 ms-3">
+        <strong>Active Lecture:</strong> {{ active_lecture.subject.code }} - {{ active_lecture.subject.name }}
+        ({{ active_lecture.section.name }})
+    </div>
+    <a href="{% url 'qr_codes:generate' %}" class="btn btn-success btn-sm">
+        <i class="fas fa-qrcode me-1"></i> Show QR Code
+    </a>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Today's Lectures -->
+    <div class="col-lg-8">
+        <div class="card animate-on-scroll">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0" style="font-weight: 600; font-size: 0.95rem;">
+                    <i class="fas fa-calendar-alt me-2"></i> Today's Schedule
+                </h5>
+                <a href="{% url 'lectures:lecture_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if todays_lectures %}
+                <div class="lecture-timeline">
+                    {% for lecture in todays_lectures %}
+                    <div class="lecture-item {% if lecture.status == 'IN_PROGRESS' %}active{% elif lecture.status == 'COMPLETED' %}completed{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1" style="font-weight: 600; font-size: 0.92rem;">{{ lecture.subject.code }} - {{ lecture.subject.name }}</h6>
+                                <p class="mb-1" style="color: var(--text-secondary); font-size: 0.85rem;">
+                                    <i class="fas fa-users me-1"></i> {{ lecture.section.name }}
+                                    <span class="mx-2" style="color: var(--border-color);">|</span>
+                                    <i class="fas fa-clock me-1"></i> Period {{ lecture.lecture_number }}
+                                </p>
+                                <small style="color: var(--text-muted); font-size: 0.8rem;">
+                                    {{ lecture.start_time|date:"g:i A" }} - {{ lecture.end_time|date:"g:i A" }}
+                                </small>
+                            </div>
+                            <span class="status-badge status-{{ lecture.status|lower }}">
+                                {% if lecture.status == 'IN_PROGRESS' %}In Progress
+                                {% elif lecture.status == 'COMPLETED' %}Completed
+                                {% else %}Scheduled{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4" style="color: var(--text-muted);">
+                    <i class="fas fa-calendar-times fa-3x mb-3" style="opacity: 0.3;"></i>
+                    <p style="font-size: 0.9rem;">No lectures scheduled for today</p>
+                    <a href="{% url 'lectures:start_lecture' %}" class="btn btn-primary btn-sm mt-2">
+                        <i class="fas fa-plus me-1"></i> Start a Lecture
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+        <div class="card mb-4 animate-on-scroll">
+            <div class="card-header">
+                <h5 class="mb-0" style="font-weight: 600; font-size: 0.95rem;">
+                    <i class="fas fa-bolt me-2"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <a href="{% url 'lectures:start_lecture' %}" class="quick-action-btn">
+                            <i class="fas fa-play-circle" style="color: var(--primary-color);"></i>
+                            <span>Start Lecture</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{% url 'qr_codes:generate' %}" class="quick-action-btn">
+                            <i class="fas fa-qrcode" style="color: var(--success-color);"></i>
+                            <span>Generate QR</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{% url 'attendance:live_attendance' %}" class="quick-action-btn">
+                            <i class="fas fa-users" style="color: var(--info-color);"></i>
+                            <span>Live Attendance</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{% url 'reports:daily_report' %}" class="quick-action-btn">
+                            <i class="fas fa-chart-bar" style="color: var(--warning-color);"></i>
+                            <span>Reports</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{% url 'subjects:assigned_subjects' %}" class="quick-action-btn">
+                            <i class="fas fa-book" style="color: var(--secondary-color);"></i>
+                            <span>My Subjects</span>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="{% url 'accounts:profile' %}" class="quick-action-btn">
+                            <i class="fas fa-user-circle" style="color: var(--danger-color);"></i>
+                            <span>Profile</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="card animate-on-scroll">
+            <div class="card-body text-center" style="padding: 24px;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(99,102,241,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 1.2rem; color: var(--primary-color);">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h6 style="font-weight: 600; font-size: 0.92rem;">AttendX v1.0.0</h6>
+                <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 0;">QR Code Attendance System</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Scroll animations
+document.addEventListener('DOMContentLoaded', function() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('animated');
+                }, index * 80);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}

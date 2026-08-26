@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Lectures - AttendX{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-calendar me-2"></i> Lecture History
+        </h5>
+        <a href="{% url 'lectures:start_lecture' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus me-1"></i> Start Lecture
+        </a>
+    </div>
+    <div class="card-body">
+        {% if lectures %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Subject</th>
+                        <th>Section</th>
+                        <th>Period</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lecture in lectures %}
+                    <tr>
+                        <td>{{ lecture.lecture_date|date:"M d, Y" }}</td>
+                        <td><strong>{{ lecture.subject.code }}</strong> - {{ lecture.subject.name }}</td>
+                        <td>{{ lecture.section.name }}</td>
+                        <td>{{ lecture.lecture_number }}</td>
+                        <td>{{ lecture.start_time|date:"g:i A" }} - {{ lecture.end_time|date:"g:i A" }}</td>
+                        <td>
+                            {% if lecture.status == 'IN_PROGRESS' %}
+                                <span class="badge bg-success">In Progress</span>
+                            {% elif lecture.status == 'COMPLETED' %}
+                                <span class="badge bg-secondary">Completed</span>
+                            {% elif lecture.status == 'SCHEDULED' %}
+                                <span class="badge bg-primary">Scheduled</span>
+                            {% else %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+            <p>No lectures found</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

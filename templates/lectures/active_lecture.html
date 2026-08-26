@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Active Lecture - AttendX{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Lecture Info -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-broadcast-tower me-2 text-success"></i> Active Lecture
+                </h5>
+                <span class="badge bg-success">In Progress</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Subject:</strong> {{ lecture.subject.code }} - {{ lecture.subject.name }}</p>
+                        <p class="mb-1"><strong>Section:</strong> {{ lecture.section.name }}</p>
+                        <p class="mb-1"><strong>Period:</strong> {{ lecture.lecture_number }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Started:</strong> {{ lecture.start_time|date:"g:i A" }}</p>
+                        <p class="mb-1"><strong>Duration:</strong> {{ lecture.duration_minutes }} min</p>
+                        <p class="mb-0"><strong>End:</strong> {{ lecture.end_time|date:"g:i A" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Code Section -->
+        <div class="card mb-4">
+            <div class="card-header text-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-qrcode me-2"></i> QR Code for Attendance
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="qr-container mx-auto">
+                    {% if active_qr %}
+                        <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" class="qr-code-image img-fluid mb-3">
+                        <div class="qr-timer" id="qrTimer" data-expiry="{{ expiry_time }}">
+                            --:--
+                        </div>
+                        <p class="text-muted mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            QR expires in <strong>{{ remaining_seconds }}</strong> seconds
+                        </p>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-qrcode fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">No active QR code session</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <button class="btn btn-primary mt-3" id="regenerateQR">
+                    <i class="fas fa-sync-alt me-1"></i> Regenerate QR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Stats -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i> Attendance
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="attendance-counter mb-3">
+                    <span id="attendanceCounter">{{ attendance_stats.present }} / {{ total_students }}</span>
+                </div>
+                <div class="text-center">
+                    <span id="attendancePercentage" class="badge bg-success fs-6">
+                        {% if total_students > 0 %}
+                            {{ attendance_stats.present|floatformat:0 }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </span>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-around text-center">
+                    <div>
+                        <div class="h4 text-success mb-0">{{ attendance_stats.present }}</div>
+                        <small class="text-muted">Present</small>
+                    </div>
+                    <div>
+                        <div class="h4 text-warning mb-0">{{ attendance_stats.late }}</div>
+                        <small class="text-muted">Late</small>
+                    </div>
+                    <div>
+                        <div class="h4 text-danger mb-0">{{ attendance_stats.absent }}</div>
+                        <small class="text-muted">Absent</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a href="{% url 'attendance:live_attendance' %}" class="btn btn-outline-primary">
+                <i class="fas fa-users me-1"></i> View Live Attendance
+            </a>
+            <a href="{% url 'qr_codes:generate' %}" class="btn btn-outline-success">
+                <i class="fas fa-qrcode me-1"></i> Full Screen QR
+            </a>
+            <form method="post" action="{% url 'lectures:end_lecture' lecture.pk %}" onsubmit="return confirm('Are you sure you want to end this lecture? Students not marked present will be marked absent.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100">
+                    <i class="fas fa-stop-circle me-1"></i> End Lecture
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('regenerateQR')?.addEventListener('click', function() {
+    fetch('/qr/api/regenerate/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const img = document.querySelector('.qr-code-image');
+            if (img) img.src = data.qr_image_url;
+            const timer = document.getElementById('qrTimer');
+            if (timer) timer.dataset.expiry = data.expiry_time;
+            startQRTimer();
+            showToast('QR Code regenerated successfully', 'success');
+        }
+    });
+});
+</script>
+{% endblock %}

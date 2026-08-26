@@ -1,0 +1,30 @@
+# Render Blueprint for AttendX
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: attendx
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    healthCheckPath: /admin/
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: config.settings.production
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: WEB_CONCURRENCY
+        value: "4"
+
+databases:
+  - name: attendx-db
+    plan: free
+    databaseName: attendx
+    user: attendx_user

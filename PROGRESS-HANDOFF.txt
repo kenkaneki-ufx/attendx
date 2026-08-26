@@ -1,0 +1,149 @@
+==================================================================
+  CONTEXT HANDOFF — AttendX Bug Fixing Session
+  (Attach this file to a new chat. Read it first, then help me.)
+==================================================================
+
+PROJECT
+-------
+AttendX is a Django-based QR Code Attendance Management System
+for educational institutions.
+
+- Site folder : D:\Desktop\AttendX
+- Stack       : Python 3.10+, Django 5.2, Bootstrap 5, PostgreSQL
+- Run tests   : DJANGO_SETTINGS_MODULE=config.settings.test python manage.py test
+- Run server  : python manage.py runserver
+- Login       : admin / admin123
+
+WHAT WAS DONE (Session Progress)
+--------------------------------
+1. ✅ Fixed database connection issue
+   - Tests were failing because they tried to connect to Supabase
+     PostgreSQL which wasn't accessible
+   - Solution: Use test settings with SQLite in-memory database
+   - Command: DJANGO_SETTINGS_MODULE=config.settings.test python manage.py test
+
+2. ✅ Fixed security bug in scan_attendance view
+   - File: Desktop/AttendX/apps/attendance/views.py
+   - Bug: The scan_attendance view used a query parameter
+     (?student_id=XXX) for student authentication, which is insecure
+   - Fix: Changed to use session-based authentication instead
+   - Old code used: request.GET.get('student_id')
+   - New code uses: request.session.get('student_id')
+   - Also checks: request.session.get('is_student')
+
+3. ✅ Updated all tests to use session-based authentication
+   - File: Desktop/AttendX/apps/attendance/tests/test_views.py
+     - Added helper method _set_student_session() to set up student session
+     - Updated test_scan_success to use session instead of query params
+     - Updated test_scan_duplicate to use session instead of query params
+     - Updated test_scan_without_student_id to check for 'login' message
+     - Updated test_scan_page_loads to use session instead of query params
+   - File: Desktop/AttendX/apps/tests/test_integration.py
+     - Updated test_full_qr_scan_workflow to use session instead of query params
+
+4. ✅ Added rate limiting to scan endpoint
+   - File: Desktop/AttendX/apps/attendance/views.py
+   - Added rate limit: max 10 scans per IP per minute
+   - Uses Django cache to track scan counts
+   - Returns friendly error message when limit exceeded
+
+5. ✅ Added more test coverage for edge cases
+   - File: Desktop/AttendX/apps/attendance/tests/test_views.py
+   - Added test_scan_wrong_section: Tests student from wrong section
+   - Added test_scan_inactive_student: Tests inactive student rejection
+   - Added test_scan_lecture_not_in_progress: Tests completed lecture
+   - Added test_scan_rate_limiting: Tests rate limit functionality
+
+CURRENT TEST STATUS
+-------------------
+- Total tests: 115
+- Passing: 115 ✅
+- Failing: 0
+- Run command: DJANGO_SETTINGS_MODULE=config.settings.test python manage.py test
+
+BUGS FOUND
+----------
+1. [FIXED] Insecure student authentication in scan_attendance view
+2. [FIXED] Test failures in attendance scan tests
+3. [FIXED] Missing rate limiting on scan endpoint
+4. [FIXED] Insufficient test coverage for edge cases
+
+SECURITY WARNINGS (Deployment)
+-------------------------------
+The following warnings appear when running `manage.py check --deploy`:
+1. SECURE_HSTS_SECONDS not set (production.py has it set)
+2. SECURE_SSL_REDIRECT not set (production.py has it set)
+3. SESSION_COOKIE_SECURE not set (production.py has it set)
+4. CSRF_COOKIE_SECURE not set (production.py has it set)
+5. ALLOWED_HOSTS must not be empty (production.py has it set)
+
+Note: These are only warnings for test/development settings.
+Production settings (config/settings/production.py) are properly configured.
+
+FUTURE CONSIDERATIONS
+---------------------
+1. Consider adding more test coverage for:
+   - Concurrent scan handling (race conditions)
+   - Session expiration handling
+   - QR code token reuse across lectures
+2. Add audit logging for attendance modifications
+3. Implement attendance export functionality
+4. Add WebSocket support for real-time attendance updates
+
+FILES MODIFIED
+--------------
+1. Desktop/AttendX/apps/attendance/views.py
+   - Changed student authentication from query parameter to session-based
+   - Added rate limiting (10 scans per IP per minute)
+
+2. Desktop/AttendX/apps/attendance/tests/test_views.py
+   - Added _set_student_session() helper method
+   - Updated all scan tests to use session-based authentication
+   - Changed test_scan_without_student_id to check for 'login' message
+   - Added 4 new edge case tests
+
+3. Desktop/AttendX/apps/tests/test_integration.py
+   - Updated test_full_qr_scan_workflow to use session-based authentication
+
+KEY CODE CHANGES
+----------------
+OLD CODE (insecure):
+```python
+# For demo: use a student ID from query param or session
+# In production, this would come from student authentication
+student_id = request.GET.get('student_id') or request.session.get('student_id')
+
+if not student_id:
+    context['message'] = 'Please provide your student ID (add ?student_id=XXX to the URL).'
+    return render(request, 'attendance/scan_result.html', context)
+```
+
+NEW CODE (secure):
+```python
+# Check if student is logged in via session
+if not request.session.get('is_student') or not request.session.get('student_id'):
+    context['message'] = 'Please login as a student first.'
+    return render(request, 'attendance/scan_result.html', context)
+
+student_id = request.session.get('student_id')
+```
+
+TEST HELPER METHOD:
+```python
+def _set_student_session(self):
+    """Helper to set up student session."""
+    session = self.client.session
+    session['is_student'] = True
+    session['student_id'] = self.student.pk
+    session.save()
+```
+
+HOW TO CONTINUE
+---------------
+When resuming this session, you can:
+1. Run tests: DJANGO_SETTINGS_MODULE=config.settings.test python manage.py test
+2. Run server: python manage.py runserver
+3. Login: admin / admin123
+
+ALL BUGS HAVE BEEN FIXED AND ALL 115 TESTS PASS ✅
+==================================================================

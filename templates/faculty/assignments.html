@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty Assignments - AttendX{% endblock %}
+
+{% block extra_css %}
+<style>
+    .assignment-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .assignment-item {
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    .assignment-item:hover {
+        border-color: #0d6efd;
+        box-shadow: 0 2px 8px rgba(13,110,253,0.1);
+    }
+    .assignment-item .badge {
+        font-size: 0.7rem;
+        padding: 3px 8px;
+    }
+    .btn-delete {
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .assignment-item:hover .btn-delete {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1"><i class="fas fa-link me-2 text-primary"></i>Faculty Subject Assignments</h4>
+        <small class="text-muted">Assign subjects and sections to faculty members</small>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Create Assignment Form -->
+    <div class="col-lg-4">
+        <div class="card assignment-card">
+            <div class="card-header bg-white">
+                <h6 class="mb-0"><i class="fas fa-plus-circle me-2 text-primary"></i>New Assignment</h6>
+            </div>
+            <div class="card-body">
+                <form id="assignmentForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Faculty Member <span class="text-danger">*</span></label>
+                        <select name="faculty_id" class="form-select form-select-sm" required>
+                            <option value="">Select Faculty</option>
+                            {% for member in faculty_list %}
+                            <option value="{{ member.pk }}">{{ member.get_full_name }} ({{ member.employee_id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Subject <span class="text-danger">*</span></label>
+                        <select name="subject_id" class="form-select form-select-sm" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.pk }}">{{ subject.code }} - {{ subject.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Section <span class="text-danger">*</span></label>
+                        <select name="section_id" class="form-select form-select-sm" required>
+                            <option value="">Select Section</option>
+                            {% for section in sections %}
+                            <option value="{{ section.pk }}">{{ section.branch.name }} - {{ section.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Academic Year</label>
+                        <input type="text" name="academic_year" class="form-control form-control-sm" 
+                               value="2025-2026" placeholder="e.g., 2025-2026">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                        <i class="fas fa-plus me-1"></i> Create Assignment
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Assignments -->
+    <div class="col-lg-8">
+        <div class="card assignment-card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-list me-2 text-primary"></i>Current Assignments</h6>
+                <span class="badge bg-primary">{{ assignments|length }}</span>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                {% for assignment in assignments %}
+                <div class="assignment-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-medium">{{ assignment.faculty.get_full_name }}</div>
+                        <small class="text-muted">
+                            {{ assignment.subject.code }} - {{ assignment.subject.name }}
+                        </small>
+                        <div class="mt-1">
+                            <span class="badge bg-light text-dark">{{ assignment.section }}</span>
+                            <span class="badge bg-info-subtle text-info">{{ assignment.academic_year }}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-danger btn-delete" 
+                            data-id="{{ assignment.pk }}" title="Delete">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-link fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
+                    <p class="text-muted mb-0">No assignments yet</p>
+                    <small class="text-muted">Create one using the form on the left</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('assignmentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const csrfToken = '{{ csrf_token }}';
+    
+    fetch('{% url "faculty:create_assignment" %}', {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-CSRFToken': csrfToken }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Error creating assignment');
+        }
+    })
+    .catch(() => alert('Network error'));
+});
+
+document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', function() {
+        if (!confirm('Delete this assignment?')) return;
+        const id = this.dataset.id;
+        fetch(`/faculty/assignments/${id}/delete/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) location.reload();
+            else alert(data.message || 'Error deleting');
+        })
+        .catch(() => alert('Network error'));
+    });
+});
+</script>
+{% endblock %}

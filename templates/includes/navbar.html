@@ -1,0 +1,95 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-3 py-2 sticky-top" style="z-index: 1000;">
+    <div class="container-fluid">
+        <!-- Mobile sidebar toggle -->
+        <button class="navbar-toggler d-lg-none me-2" type="button" aria-label="Toggle sidebar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard:faculty_dashboard' %}">
+            <i class="fas fa-qrcode text-primary" style="font-size: 1.4rem;"></i>
+            <span class="fw-bold d-none d-sm-inline">AttendX</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <!-- Dark mode toggle -->
+                <li class="nav-item me-1">
+                    <button class="btn btn-link nav-link px-2" id="darkModeToggle" type="button" aria-pressed="false" aria-label="Toggle dark mode" title="Toggle dark mode">
+                        <i class="fas fa-moon" id="darkModeIcon"></i>
+                    </button>
+                </li>
+
+                <!-- Theme (accent color) switcher -->
+                <li class="nav-item dropdown me-1">
+                    <button class="btn btn-link nav-link px-2" id="themeSwitcherBtn" type="button" aria-label="Choose accent color" title="Accent color">
+                        <i class="fas fa-palette"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end shadow-sm p-2" id="themeSwitcherDropdown" aria-labelledby="themeSwitcherBtn" style="min-width: 180px;">
+                        <h6 class="dropdown-header small text-muted text-uppercase">Accent Color</h6>
+                        <div class="d-flex justify-content-around px-2 py-1">
+                            <button type="button" class="theme-color-btn rounded-circle border-0 p-0" data-theme-color="indigo" style="width: 28px; height: 28px; background: #4F46E5;" aria-label="Indigo" aria-pressed="false"></button>
+                            <button type="button" class="theme-color-btn rounded-circle border-0 p-0" data-theme-color="rose" style="width: 28px; height: 28px; background: #E11D48;" aria-label="Rose" aria-pressed="false"></button>
+                            <button type="button" class="theme-color-btn rounded-circle border-0 p-0" data-theme-color="emerald" style="width: 28px; height: 28px; background: #10B981;" aria-label="Emerald" aria-pressed="false"></button>
+                            <button type="button" class="theme-color-btn rounded-circle border-0 p-0" data-theme-color="amber" style="width: 28px; height: 28px; background: #F59E0B;" aria-label="Amber" aria-pressed="false"></button>
+                            <button type="button" class="theme-color-btn rounded-circle border-0 p-0" data-theme-color="cyan" style="width: 28px; height: 28px; background: #06B6D4;" aria-label="Cyan" aria-pressed="false"></button>
+                        </div>
+                    </div>
+                </li>
+
+                <!-- Notifications -->
+                <li class="nav-item dropdown me-1">
+                    <a class="nav-link position-relative" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.6rem;">0</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="notificationDropdown">
+                        <li><span class="dropdown-item-text text-muted">No new notifications</span></li>
+                    </ul>
+                </li>
+
+                <!-- User menu -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="avatar-circle bg-primary text-white d-flex align-items-center justify-content-center rounded-circle" style="width: 34px; height: 34px; font-size: 0.85rem;">
+                            {{ user.first_name|first|default:"F" }}{{ user.last_name|first|default:"" }}
+                        </span>
+                        <span class="fw-medium d-none d-md-inline">{{ user.get_full_name|default:user.username }}</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="userDropdown">
+                        <li>
+                            <span class="dropdown-item-text text-muted small">
+                                <i class="fas fa-id-badge me-2"></i>{{ user.employee_id }}
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                <i class="fas fa-user me-2"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'accounts:change_password' %}">
+                                <i class="fas fa-key me-2"></i> Change Password
+                            </a>
+                        </li>
+                        <li style="margin: 4px 0; border-top: 1px solid var(--border-light);"></li>
+                        <li>
+                            <form method="post" action="{% url 'accounts:logout' %}" class="mb-0">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger" style="color: var(--danger-color) !important; background: none; border: 0; width: 100%; text-align: left;">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

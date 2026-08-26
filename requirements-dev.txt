@@ -1,0 +1,16 @@
+-r requirements.txt
+
+# Testing
+pytest-django>=4.7.0
+pytest-cov>=4.1.0
+factory-boy>=3.3.0
+
+# Code Quality
+ruff>=0.2.0
+black>=24.1.0
+isort>=5.13.0
+
+# Development Tools
+django-debug-toolbar>=4.2.0
+django-extensions>=3.2.0
+ipython>=8.21.0

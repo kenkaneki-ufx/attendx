@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Daily Report - AttendX{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        /* Hide non-essential elements */
+        .navbar, .sidebar, .footer, .btn, .breadcrumb, .alert {
+            display: none !important;
+        }
+        
+        /* Remove shadows and backgrounds */
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #dee2e6 !important;
+        }
+        
+        /* Clean table styling */
+        .table {
+            border-collapse: collapse !important;
+        }
+        .table th, .table td {
+            border: 1px solid #dee2e6 !important;
+            padding: 8px !important;
+        }
+        .table thead th {
+            background-color: #f8f9fa !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        /* Badge colors for print */
+        .badge {
+            border: 1px solid currentColor !important;
+        }
+        
+        /* Page setup */
+        body {
+            font-size: 12pt;
+            color: #000;
+            background: #fff;
+        }
+        
+        /* Add header info */
+        .print-header {
+            display: block !important;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .print-header h2 {
+            margin-bottom: 5px;
+        }
+        
+        .print-header p {
+            color: #666;
+            font-size: 10pt;
+        }
+        
+        /* Remove main content padding */
+        .container-fluid, .container {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+        }
+    }
+    
+    /* Hidden print header - only shown when printing */
+    .print-header {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Print-only header -->
+<div class="print-header">
+    <h2>AttendX - Daily Attendance Report</h2>
+    <p>{{ report_date|date:"l, F d, Y" }}</p>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i> Daily Report - {{ report_date|date:"M d, Y" }}
+        </h5>
+        <div>
+            <a href="{% url 'reports:export_daily_csv' %}" class="btn btn-sm btn-outline-success me-1">
+                <i class="fas fa-file-csv me-1"></i> CSV
+            </a>
+            <a href="{% url 'reports:export_daily_pdf' %}" class="btn btn-sm btn-outline-danger me-1">
+                <i class="fas fa-file-pdf me-1"></i> PDF
+            </a>
+            <button class="btn btn-sm btn-outline-primary" onclick="window.print()">
+                <i class="fas fa-print me-1"></i> Print
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if report_data %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Section</th>
+                        <th>Present</th>
+                        <th>Late</th>
+                        <th>Absent</th>
+                        <th>Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in report_data %}
+                    <tr>
+                        <td><strong>{{ item.lecture.subject.code }}</strong> - {{ item.lecture.subject.name }}</td>
+                        <td>{{ item.lecture.section.name }}</td>
+                        <td><span class="badge bg-success">{{ item.stats.present }}</span></td>
+                        <td><span class="badge bg-warning">{{ item.stats.late }}</span></td>
+                        <td><span class="badge bg-danger">{{ item.stats.absent }}</span></td>
+                        <td>{{ item.stats.attendance_rate|floatformat:1 }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="fas fa-chart-bar fa-3x mb-3"></i>
+            <p>No completed lectures for today</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

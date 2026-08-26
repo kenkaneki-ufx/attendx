@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate QR Code - AttendX{% endblock %}
+
+{% block extra_css %}
+<style>
+    .qr-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 40px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    .qr-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        animation: heroPulse 4s ease-in-out infinite;
+    }
+    @keyframes heroPulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    .qr-showcase {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+    }
+    .qr-showcase:hover {
+        transform: translateY(-5px);
+    }
+    .qr-code-wrapper {
+        position: relative;
+        display: inline-block;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .qr-code-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: qrShine 3s infinite;
+    }
+    @keyframes qrShine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    .timer-ring {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 6px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px auto;
+        position: relative;
+    }
+    .timer-ring::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: -6px;
+        right: -6px;
+        bottom: -6px;
+        border-radius: 50%;
+        border: 6px solid transparent;
+        border-top-color: #0d6efd;
+        animation: timerSpin 2s linear infinite;
+    }
+    .timer-ring.warning::before {
+        border-top-color: #ffc107;
+        animation-duration: 1s;
+    }
+    .timer-ring.expired::before {
+        border-top-color: #dc3545;
+        animation: timerPulse 0.5s ease-in-out infinite;
+    }
+    @keyframes timerSpin {
+        100% { transform: rotate(360deg); }
+    }
+    @keyframes timerPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+    .regenerate-btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .regenerate-btn:active {
+        transform: scale(0.95);
+    }
+    .regenerate-btn.refreshing i {
+        animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+    .success-flash {
+        animation: successFlash 0.5s ease;
+    }
+    @keyframes successFlash {
+        0% { background-color: transparent; }
+        50% { background-color: rgba(40, 167, 69, 0.2); }
+        100% { background-color: transparent; }
+    }
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        background: rgba(255,255,255,0.2);
+        backdrop-filter: blur(10px);
+        transition: transform 0.2s ease;
+    }
+    .stat-pill:hover {
+        transform: scale(1.05);
+    }
+    .lecture-badge {
+        animation: badgeBounce 0.5s ease;
+    }
+    @keyframes badgeBounce {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <!-- QR Hero Section -->
+        <div class="qr-hero mb-4">
+            <div class="text-center position-relative">
+                <h3 class="mb-2">
+                    <i class="fas fa-qrcode me-2"></i> QR Code Generator
+                </h3>
+                <p class="mb-3 opacity-75">Students scan this to mark attendance</p>
+                
+                {% if active_lecture %}
+                <div class="lecture-badge">
+                    <span class="stat-pill">
+                        <i class="fas fa-book"></i>
+                        {{ active_lecture.subject.code }}
+                    </span>
+                    <span class="stat-pill">
+                        <i class="fas fa-users"></i>
+                        {{ active_lecture.section.name }}
+                    </span>
+                    <span class="stat-pill">
+                        <i class="fas fa-clock"></i>
+                        {{ active_lecture.get_lecture_number_display }} Period
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if qr_session %}
+        <!-- QR Code Showcase -->
+        <div class="qr-showcase text-center">
+            <div class="qr-code-wrapper mx-auto mb-4">
+                <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" 
+                     class="qr-code-image img-fluid" id="qrImage"
+                     style="max-width: 280px; border-radius: 8px;">
+            </div>
+
+            <!-- Animated Timer Ring -->
+            <div class="timer-ring mx-auto mb-3" id="timerRing">
+                <div class="qr-timer" id="qrTimer" data-expiry="{{ expiry_time }}">
+                    --:--
+                </div>
+            </div>
+
+            <p class="text-muted mb-4">
+                <i class="fas fa-info-circle me-1"></i>
+                QR expires in <strong id="expirySeconds">{{ remaining_seconds }}</strong> seconds
+            </p>
+
+            <!-- Regenerate Button -->
+            <button class="btn btn-primary btn-lg regenerate-btn" id="regenerateQR">
+                <i class="fas fa-sync-alt me-2"></i> Regenerate QR
+            </button>
+        </div>
+
+        <!-- Tips -->
+        <div class="text-center mt-4">
+            <small class="text-muted">
+                <i class="fas fa-lightbulb me-1 text-warning"></i>
+                Display this on the projector for students to scan
+            </small>
+        </div>
+        {% else %}
+        <!-- No Active Lecture -->
+        <div class="qr-showcase text-center">
+            <div class="py-4">
+                <i class="fas fa-qrcode fa-4x text-muted mb-3" style="opacity: 0.3;"></i>
+                <p class="text-muted mb-3">No active lecture to generate QR for</p>
+                <a href="{% url 'lectures:start_lecture' %}" class="btn btn-primary">
+                    <i class="fas fa-play me-1"></i> Start a Lecture
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('regenerateQR')?.addEventListener('click', function() {
+    const btn = this;
+    const originalHTML = btn.innerHTML;
+    
+    // Add refreshing animation
+    btn.classList.add('refreshing');
+    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Regenerating...';
+    btn.disabled = true;
+
+    fetch('/qr/api/regenerate/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const img = document.querySelector('.qr-code-image');
+            if (img) {
+                img.src = data.qr_image_url;
+                // Flash effect
+                img.parentElement.parentElement.classList.add('success-flash');
+                setTimeout(() => {
+                    img.parentElement.parentElement.classList.remove('success-flash');
+                }, 500);
+            }
+            const timer = document.getElementById('qrTimer');
+            if (timer) timer.dataset.expiry = data.expiry_time;
+            
+            const ring = document.getElementById('timerRing');
+            if (ring) ring.classList.remove('warning', 'expired');
+            
+            startQRTimer();
+            showToast('QR Code refreshed successfully', 'success');
+        }
+    })
+    .finally(() => {
+        btn.classList.remove('refreshing');
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+    });
+});
+
+// Update expiry seconds countdown
+// Timer logic is handled by startQRTimer() in main.js
+// This avoids duplicate intervals that would cause the timer to tick twice as fast
+</script>
+{% endblock %}
