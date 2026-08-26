@@ -5,25 +5,30 @@
 {% block extra_css %}
 <style>
     .assignment-card {
-        border: none;
+        border: 1px solid var(--border-color);
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        box-shadow: var(--shadow-md);
+        background: var(--bg-card);
     }
     .assignment-item {
-        border: 1px solid #e9ecef;
+        border: 1px solid var(--border-color);
         border-radius: 10px;
         padding: 12px 16px;
         margin-bottom: 10px;
         transition: all 0.2s ease;
-        background: white;
+        background: var(--bg-card);
     }
     .assignment-item:hover {
-        border-color: #0d6efd;
-        box-shadow: 0 2px 8px rgba(13,110,253,0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 2px 8px rgba(99,102,241,0.1);
     }
     .assignment-item .badge {
         font-size: 0.7rem;
         padding: 3px 8px;
+    }
+    .assignment-header {
+        color: var(--text-primary) !important;
+        font-weight: 600;
     }
     .btn-delete {
         opacity: 0;
@@ -47,8 +52,8 @@
     <!-- Create Assignment Form -->
     <div class="col-lg-4">
         <div class="card assignment-card">
-            <div class="card-header bg-white">
-                <h6 class="mb-0"><i class="fas fa-plus-circle me-2 text-primary"></i>New Assignment</h6>
+            <div class="card-header" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                <h6 class="mb-0 assignment-header"><i class="fas fa-plus-circle me-2 text-primary"></i>New Assignment</h6>
             </div>
             <div class="card-body">
                 <form id="assignmentForm">
@@ -96,8 +101,8 @@
     <!-- Existing Assignments -->
     <div class="col-lg-8">
         <div class="card assignment-card">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="fas fa-list me-2 text-primary"></i>Current Assignments</h6>
+            <div class="card-header d-flex justify-content-between align-items-center" style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                <h6 class="mb-0 assignment-header"><i class="fas fa-list me-2 text-primary"></i>Current Assignments</h6>
                 <span class="badge bg-primary">{{ assignments|length }}</span>
             </div>
             <div class="card-body" style="max-height: 600px; overflow-y: auto;">
@@ -109,7 +114,7 @@
                             {{ assignment.subject.code }} - {{ assignment.subject.name }}
                         </small>
                         <div class="mt-1">
-                            <span class="badge bg-light text-dark">{{ assignment.section }}</span>
+                            <span class="badge" style="background: var(--bg-secondary); color: var(--text-primary);">{{ assignment.section }}</span>
                             <span class="badge bg-info-subtle text-info">{{ assignment.academic_year }}</span>
                         </div>
                     </div>

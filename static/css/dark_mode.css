@@ -271,6 +271,23 @@ body.dark-mode .table tbody td {
     color: #cbd5e1;
 }
 
+/* Subject code styling */
+body.dark-mode .subject-code {
+    color: #f1f5f9 !important;
+    font-weight: 600;
+}
+
+body.dark-mode .subject-icon {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+}
+
+body.dark-mode code {
+    color: #a5b4fc;
+    background: rgba(99, 102, 241, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
 /* =============================================
    FORM CONTROLS DARK MODE
    ============================================= */
@@ -701,6 +718,54 @@ body.dark-mode .text-warning {
 
 body.dark-mode .text-info {
     color: #22d3ee !important;
+}
+
+/* =============================================
+   ACCENT COLOR THEMES - DARK MODE
+   ============================================= */
+
+/* Rose Theme Dark Mode */
+body.dark-mode[data-theme="rose"] .subject-icon,
+body.dark-mode[data-theme="rose"] .btn-primary,
+body.dark-mode[data-theme="rose"] .badge-primary {
+    background: linear-gradient(135deg, #fb7185 0%, #f472b6 100%) !important;
+}
+
+body.dark-mode[data-theme="rose"] .card::before {
+    background: linear-gradient(135deg, #fb7185, #f472b6);
+}
+
+/* Emerald Theme Dark Mode */
+body.dark-mode[data-theme="emerald"] .subject-icon,
+body.dark-mode[data-theme="emerald"] .btn-primary,
+body.dark-mode[data-theme="emerald"] .badge-primary {
+    background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%) !important;
+}
+
+body.dark-mode[data-theme="emerald"] .card::before {
+    background: linear-gradient(135deg, #34d399, #22d3ee);
+}
+
+/* Amber Theme Dark Mode */
+body.dark-mode[data-theme="amber"] .subject-icon,
+body.dark-mode[data-theme="amber"] .btn-primary,
+body.dark-mode[data-theme="amber"] .badge-primary {
+    background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%) !important;
+}
+
+body.dark-mode[data-theme="amber"] .card::before {
+    background: linear-gradient(135deg, #fbbf24, #fb923c);
+}
+
+/* Cyan Theme Dark Mode */
+body.dark-mode[data-theme="cyan"] .subject-icon,
+body.dark-mode[data-theme="cyan"] .btn-primary,
+body.dark-mode[data-theme="cyan"] .badge-primary {
+    background: linear-gradient(135deg, #22d3ee 0%, #60a5fa 100%) !important;
+}
+
+body.dark-mode[data-theme="cyan"] .card::before {
+    background: linear-gradient(135deg, #22d3ee, #60a5fa);
 }
 
 /* =============================================
