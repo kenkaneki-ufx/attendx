@@ -30,6 +30,9 @@ celery>=5.3.6
 # Static Files
 whitenoise>=6.5.0
 
+# WSGI Server
+gunicorn>=21.2.0
+
 # Environment Variables
 python-dotenv>=1.0.0
 

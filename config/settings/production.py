@@ -15,6 +15,10 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
+# Append Koyeb domain if deployed
+if os.getenv('KOYEB_PUBLIC_DOMAIN'):
+    ALLOWED_HOSTS.append(os.getenv('KOYEB_PUBLIC_DOMAIN'))
+
 # Database - Support both DATABASE_URL (Render/Heroku) and individual vars
 import dj_database_url
 
@@ -80,7 +84,7 @@ else:
 # Static files with WhiteNoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Logging - Console only for Render (no file system access)
+# Logging - Console only (no file system access on PaaS)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
