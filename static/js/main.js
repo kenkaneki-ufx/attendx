@@ -150,6 +150,8 @@ function initQRCodePage() {
  */
 let qrCountdown;
 let qrExpiryTime;
+let qrAutoRefreshAttempts = 0;
+const MAX_AUTO_REFRESH_ATTEMPTS = 3;
 
 function startQRTimer() {
     const timerElement = document.getElementById('qrTimer');
@@ -157,13 +159,22 @@ function startQRTimer() {
 
     // Get expiry time from data attribute
     qrExpiryTime = new Date(timerElement.dataset.expiry).getTime();
+    qrAutoRefreshAttempts = 0;
     
-    // Update timer every second
+    // Clear any existing interval
+    if (qrCountdown) clearInterval(qrCountdown);
+    
+    // Update immediately then every second
+    updateQRTimer();
     qrCountdown = setInterval(updateQRTimer, 1000);
 }
 
 function updateQRTimer() {
     const timerElement = document.getElementById('qrTimer');
+    const expiryText = document.getElementById('expiryText');
+    const expirySeconds = document.getElementById('expirySeconds');
+    const timerRing = document.getElementById('timerRing');
+    
     if (!timerElement) {
         clearInterval(qrCountdown);
         return;
@@ -176,9 +187,22 @@ function updateQRTimer() {
         clearInterval(qrCountdown);
         timerElement.textContent = 'EXPIRED';
         timerElement.classList.add('text-danger');
+        timerElement.classList.remove('text-primary', 'text-warning');
         
-        // Auto-refresh QR code
-        autoRefreshQR();
+        if (timerRing) {
+            timerRing.classList.add('expired');
+            timerRing.classList.remove('warning');
+        }
+        
+        if (expiryText) {
+            expiryText.innerHTML = '<i class="fas fa-exclamation-circle me-1 text-danger"></i><span class="text-danger">QR has expired</span>';
+        }
+        
+        // Auto-refresh QR code (with limit)
+        if (qrAutoRefreshAttempts < MAX_AUTO_REFRESH_ATTEMPTS) {
+            qrAutoRefreshAttempts++;
+            autoRefreshQR();
+        }
         return;
     }
 
@@ -186,11 +210,22 @@ function updateQRTimer() {
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    timerElement.classList.remove('text-danger', 'text-warning');
+    
+    if (timerRing) {
+        timerRing.classList.remove('expired', 'warning');
+    }
+    
+    if (expiryText) {
+        expiryText.innerHTML = '<i class="fas fa-info-circle me-1"></i>QR expires in <strong id="expirySeconds">' + seconds + '</strong> seconds';
+    }
     
     // Change color when less than 15 seconds
     if (distance < 15000) {
         timerElement.classList.add('text-warning');
-        timerElement.classList.remove('text-primary');
+        if (timerRing) timerRing.classList.add('warning');
+    } else {
+        timerElement.classList.add('text-primary');
     }
 }
 
@@ -201,12 +236,15 @@ function autoRefreshQR() {
     $.ajax({
         url: '/qr/api/regenerate/',
         type: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
         success: function(data) {
             if (data.success) {
                 // Update QR image
                 const qrImage = document.getElementById('qrImage');
                 if (qrImage) {
                     qrImage.src = data.qr_image_url;
+                    qrImage.classList.add('success-flash');
+                    setTimeout(() => qrImage.classList.remove('success-flash'), 500);
                 }
                 
                 // Update timer
@@ -215,15 +253,22 @@ function autoRefreshQR() {
                     timerElement.dataset.expiry = data.expiry_time;
                     timerElement.classList.remove('text-danger', 'text-warning');
                     timerElement.classList.add('text-primary');
-                    startQRTimer();
                 }
                 
+                // Update timer ring
+                const timerRing = document.getElementById('timerRing');
+                if (timerRing) {
+                    timerRing.classList.remove('expired', 'warning');
+                }
+                
+                qrAutoRefreshAttempts = 0;
+                startQRTimer();
                 showToast('QR Code refreshed successfully', 'success');
             }
         },
         error: function(xhr, status, error) {
             console.error('Error refreshing QR code:', error);
-            showToast('Failed to refresh QR code', 'error');
+            showToast('Failed to refresh QR code. Please click Regenerate.', 'error');
         }
     });
 }

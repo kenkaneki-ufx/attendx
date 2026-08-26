@@ -12,49 +12,17 @@
         position: relative;
         overflow: hidden;
     }
-    .qr-hero::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-        animation: heroPulse 4s ease-in-out infinite;
-    }
-    @keyframes heroPulse {
-        0%, 100% { transform: scale(1); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 0.8; }
-    }
     .qr-showcase {
         background: white;
         border-radius: 16px;
         padding: 30px;
         box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-        transition: transform 0.3s ease;
-    }
-    .qr-showcase:hover {
-        transform: translateY(-5px);
     }
     .qr-code-wrapper {
         position: relative;
         display: inline-block;
         border-radius: 12px;
         overflow: hidden;
-    }
-    .qr-code-wrapper::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: qrShine 3s infinite;
-    }
-    @keyframes qrShine {
-        0% { left: -100%; }
-        100% { left: 100%; }
     }
     .timer-ring {
         width: 120px;
@@ -85,14 +53,22 @@
     }
     .timer-ring.expired::before {
         border-top-color: #dc3545;
-        animation: timerPulse 0.5s ease-in-out infinite;
+        animation: none;
+        border-color: #dc3545;
     }
     @keyframes timerSpin {
         100% { transform: rotate(360deg); }
     }
-    @keyframes timerPulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+    .qr-timer {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0d6efd;
+    }
+    .qr-timer.text-danger {
+        color: #dc3545 !important;
+    }
+    .qr-timer.text-warning {
+        color: #ffc107 !important;
     }
     .regenerate-btn {
         position: relative;
@@ -124,17 +100,6 @@
         border-radius: 50px;
         background: rgba(255,255,255,0.2);
         backdrop-filter: blur(10px);
-        transition: transform 0.2s ease;
-    }
-    .stat-pill:hover {
-        transform: scale(1.05);
-    }
-    .lecture-badge {
-        animation: badgeBounce 0.5s ease;
-    }
-    @keyframes badgeBounce {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
     }
 </style>
 {% endblock %}
@@ -180,14 +145,18 @@
 
             <!-- Animated Timer Ring -->
             <div class="timer-ring mx-auto mb-3" id="timerRing">
-                <div class="qr-timer" id="qrTimer" data-expiry="{{ expiry_time }}">
-                    --:--
+                <div class="qr-timer" id="qrTimer" data-expiry="{{ expiry_time }}" data-remaining="{{ remaining_seconds }}">
+                    {% if remaining_seconds > 0 %}{{ remaining_seconds }}{% else %}EXPIRED{% endif %}
                 </div>
             </div>
 
-            <p class="text-muted mb-4">
+            <p class="text-muted mb-4" id="expiryText">
                 <i class="fas fa-info-circle me-1"></i>
+                {% if remaining_seconds > 0 %}
                 QR expires in <strong id="expirySeconds">{{ remaining_seconds }}</strong> seconds
+                {% else %}
+                <span class="text-danger">QR has expired</span>
+                {% endif %}
             </p>
 
             <!-- Regenerate Button -->
