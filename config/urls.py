@@ -6,6 +6,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.defaults import page_not_found
+from apps.core.views_seed_assignments import seedfacultyassignments_view
 
 # Custom error handlers
 def custom_404(request, exception):
@@ -15,6 +16,9 @@ handler404 = 'config.urls.custom_404'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    
+    # Temporary: Seed faculty assignments
+    path('seedassignments/', seedfacultyassignments_view, name='seedassignments'),
     
     # Core app
     path('', include('apps.core.urls')),
