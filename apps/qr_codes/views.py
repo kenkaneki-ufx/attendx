@@ -102,46 +102,51 @@ class QRDisplayView(LoginRequiredMixin, TemplateView):
 @require_POST
 def qr_regenerate_api(request):
     """AJAX endpoint to regenerate QR code."""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'message': 'Method not allowed'})
-
     today = timezone.now().date()
     from apps.lectures.models import Lecture
     from apps.qr_codes.models import QRCodeSession
     import qrcode
     import io
     import base64
+    import traceback
 
-    active_lecture = Lecture.objects.filter(
-        faculty=request.user,
-        lecture_date=today,
-        status='IN_PROGRESS',
-        is_active=True
-    ).first()
+    try:
+        active_lecture = Lecture.objects.filter(
+            faculty=request.user,
+            lecture_date=today,
+            status='IN_PROGRESS',
+            is_active=True
+        ).first()
 
-    if not active_lecture:
-        return JsonResponse({'success': False, 'message': 'No active lecture'})
+        if not active_lecture:
+            return JsonResponse({'success': False, 'message': 'No active lecture found. Please start a lecture first.'})
 
-    # Deactivate old session
-    QRCodeSession.objects.filter(
-        lecture=active_lecture, is_active=True
-    ).update(is_active=False)
+        # Deactivate any existing active sessions for this lecture
+        QRCodeSession.objects.filter(
+            lecture=active_lecture, is_active=True
+        ).update(is_active=False)
 
-    # Create new session
-    from django.conf import settings
-    expiry = getattr(settings, 'ATTENDX_QR_EXPIRY_SECONDS', 60)
-    new_session = QRCodeSession.create_session(active_lecture, expiry)
+        # Create new session
+        from django.conf import settings
+        expiry = getattr(settings, 'ATTENDX_QR_EXPIRY_SECONDS', 60)
+        new_session = QRCodeSession.create_session(active_lecture, expiry)
 
-    # Generate QR image
-    qr_url = f"{request.scheme}://{request.get_host()}/attendance/scan/{new_session.token}/"
-    qr_img = qrcode.make(qr_url)
-    buffer = io.BytesIO()
-    qr_img.save(buffer, format='PNG')
-    qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+        # Generate QR image
+        qr_url = f"{request.scheme}://{request.get_host()}/attendance/scan/{new_session.token}/"
+        qr_img = qrcode.make(qr_url)
+        buffer = io.BytesIO()
+        qr_img.save(buffer, format='PNG')
+        qr_b64 = base64.b64encode(buffer.getvalue()).decode()
 
-    return JsonResponse({
-        'success': True,
-        'qr_image_url': f"data:image/png;base64,{qr_b64}",
-        'token': new_session.token,
-        'expiry_time': new_session.expires_at.isoformat(),
-    })
+        return JsonResponse({
+            'success': True,
+            'qr_image_url': f"data:image/png;base64,{qr_b64}",
+            'token': new_session.token,
+            'expiry_time': new_session.expires_at.isoformat(),
+        })
+    except Exception as e:
+        traceback.print_exc()
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        })

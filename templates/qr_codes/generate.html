@@ -198,9 +198,32 @@
 
 {% block extra_js %}
 <script>
+// Get CSRF token from cookie
+function getCSRFToken() {
+    const name = 'csrftoken';
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 document.getElementById('regenerateQR')?.addEventListener('click', function() {
     const btn = this;
     const originalHTML = btn.innerHTML;
+    const csrfToken = getCSRFToken();
+    
+    if (!csrfToken) {
+        showToast('Session expired. Please refresh the page.', 'error');
+        return;
+    }
     
     // Add refreshing animation
     btn.classList.add('refreshing');
@@ -209,22 +232,31 @@ document.getElementById('regenerateQR')?.addEventListener('click', function() {
 
     fetch('/qr/api/regenerate/', {
         method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json'
+        }
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return r.json();
+    })
     .then(data => {
         if (data.success) {
             // Reload the page to get the new QR code and timer
             window.location.reload();
         } else {
-            showToast('Failed to generate QR code', 'error');
+            showToast(data.message || 'Failed to generate QR code', 'error');
             btn.classList.remove('refreshing');
             btn.innerHTML = originalHTML;
             btn.disabled = false;
         }
     })
     .catch(err => {
-        showToast('Error generating QR code', 'error');
+        console.error('QR regeneration error:', err);
+        showToast('Error generating QR code. Please try again.', 'error');
         btn.classList.remove('refreshing');
         btn.innerHTML = originalHTML;
         btn.disabled = false;
