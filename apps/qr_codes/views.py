@@ -105,12 +105,15 @@ def qr_regenerate_api(request):
     today = timezone.now().date()
     from apps.lectures.models import Lecture
     from apps.qr_codes.models import QRCodeSession
+    from apps.subjects.models import Subject
+    from apps.sections.models import Section
     import qrcode
     import io
     import base64
     import traceback
 
     try:
+        # First, try to find an active lecture
         active_lecture = Lecture.objects.filter(
             faculty=request.user,
             lecture_date=today,
@@ -118,8 +121,44 @@ def qr_regenerate_api(request):
             is_active=True
         ).first()
 
+        # If no active lecture, try to find a recent one (within 2 hours) that was completed
         if not active_lecture:
-            return JsonResponse({'success': False, 'message': 'No active lecture found. Please start a lecture first.'})
+            two_hours_ago = timezone.now() - timezone.timedelta(hours=2)
+            recent_lecture = Lecture.objects.filter(
+                faculty=request.user,
+                lecture_date=today,
+                status='COMPLETED',
+                is_active=True,
+                end_time__gte=two_hours_ago
+            ).order_by('-end_time').first()
+            
+            if recent_lecture:
+                # Reactivate the lecture
+                recent_lecture.status = 'IN_PROGRESS'
+                recent_lecture.end_time = None
+                recent_lecture.save(update_fields=['status', 'end_time'])
+                active_lecture = recent_lecture
+
+        # If still no lecture, check if there's any lecture today and use the first one
+        if not active_lecture:
+            any_lecture_today = Lecture.objects.filter(
+                faculty=request.user,
+                lecture_date=today,
+                is_active=True
+            ).order_by('-start_time').first()
+            
+            if any_lecture_today:
+                # Reactivate this lecture
+                any_lecture_today.status = 'IN_PROGRESS'
+                any_lecture_today.end_time = None
+                any_lecture_today.save(update_fields=['status', 'end_time'])
+                active_lecture = any_lecture_today
+
+        if not active_lecture:
+            return JsonResponse({
+                'success': False,
+                'message': 'No lecture found for today. Please start a new lecture from the dashboard.'
+            })
 
         # Deactivate any existing active sessions for this lecture
         QRCodeSession.objects.filter(
@@ -143,6 +182,10 @@ def qr_regenerate_api(request):
             'qr_image_url': f"data:image/png;base64,{qr_b64}",
             'token': new_session.token,
             'expiry_time': new_session.expires_at.isoformat(),
+            'lecture_info': {
+                'subject': active_lecture.subject.code,
+                'section': active_lecture.section.name,
+            }
         })
     except Exception as e:
         traceback.print_exc()

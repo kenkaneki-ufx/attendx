@@ -198,8 +198,15 @@
 
 {% block extra_js %}
 <script>
-// Get CSRF token from cookie
+// Get CSRF token from meta tag or cookie
 function getCSRFToken() {
+    // Try meta tag first
+    const metaTag = document.querySelector('meta[name="csrf-token"]');
+    if (metaTag) {
+        return metaTag.getAttribute('content');
+    }
+    
+    // Fallback to cookie
     const name = 'csrftoken';
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
