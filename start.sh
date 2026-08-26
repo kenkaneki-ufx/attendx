@@ -44,6 +44,10 @@ else:
 echo "Checking for AKTU data..."
 python manage.py seedaktu
 
+# Seed CS21 timetable if empty
+echo "Checking for CS21 timetable..."
+python manage.py shell -c "from apps.lectures.models_timetable import Timetable; print(f'Timetable entries: {Timetable.objects.count()}') if Timetable.objects.exists() else __import__('django.core.management', fromlist=['call_command']).call_command('seedcs21timetable')"
+
 # Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
