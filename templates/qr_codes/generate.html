@@ -245,18 +245,53 @@ document.getElementById('regenerateQR')?.addEventListener('click', function() {
     })
     .then(data => {
         if (data.success) {
-            // Reload the page to get the new QR code and timer
-            window.location.reload();
+            // Update QR image in place
+            const qrImage = document.getElementById('qrImage');
+            if (qrImage) {
+                qrImage.src = data.qr_image_url;
+                qrImage.classList.add('success-flash');
+                setTimeout(() => qrImage.classList.remove('success-flash'), 500);
+            }
+            
+            // Update timer
+            const timerElement = document.getElementById('qrTimer');
+            if (timerElement) {
+                timerElement.dataset.expiry = data.expiry_time;
+                timerElement.classList.remove('text-danger', 'text-warning');
+                timerElement.classList.add('text-primary');
+                startQRTimer();
+            }
+            
+            // Update timer ring
+            const timerRing = document.getElementById('timerRing');
+            if (timerRing) {
+                timerRing.classList.remove('expired', 'warning');
+            }
+            
+            // Update expiry text
+            const expiryText = document.getElementById('expiryText');
+            if (expiryText) {
+                expiryText.innerHTML = '<i class="fas fa-info-circle me-1"></i>QR expires in <strong id="expirySeconds">60</strong> seconds';
+            }
+            
+            // If we were in expired state, we need to show the QR section
+            const showcase = document.querySelector('.qr-showcase');
+            if (showcase && showcase.querySelector('.text-danger')) {
+                // We were in expired state, reload to show proper QR
+                window.location.reload();
+                return;
+            }
+            
+            showToast('QR Code generated successfully', 'success');
         } else {
             showToast(data.message || 'Failed to generate QR code', 'error');
-            btn.classList.remove('refreshing');
-            btn.innerHTML = originalHTML;
-            btn.disabled = false;
         }
     })
     .catch(err => {
         console.error('QR regeneration error:', err);
         showToast('Error generating QR code. Please try again.', 'error');
+    })
+    .finally(() => {
         btn.classList.remove('refreshing');
         btn.innerHTML = originalHTML;
         btn.disabled = false;
