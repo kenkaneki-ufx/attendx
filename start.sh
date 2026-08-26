@@ -40,6 +40,10 @@ else:
     print(f'Superuser {username} already exists.')
 "
 
+# Seed AKTU data if database is empty
+echo "Checking for AKTU data..."
+python manage.py seedaktu
+
 # Collect static files
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
