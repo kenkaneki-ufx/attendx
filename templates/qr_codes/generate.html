@@ -134,8 +134,8 @@
             </div>
         </div>
 
-        {% if qr_session %}
-        <!-- QR Code Showcase -->
+        {% if qr_session and not qr_expired %}
+        <!-- QR Code Active -->
         <div class="qr-showcase text-center">
             <div class="qr-code-wrapper mx-auto mb-4">
                 <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code" 
@@ -152,11 +152,7 @@
 
             <p class="text-muted mb-4" id="expiryText">
                 <i class="fas fa-info-circle me-1"></i>
-                {% if remaining_seconds > 0 %}
                 QR expires in <strong id="expirySeconds">{{ remaining_seconds }}</strong> seconds
-                {% else %}
-                <span class="text-danger">QR has expired</span>
-                {% endif %}
             </p>
 
             <!-- Regenerate Button -->
@@ -171,6 +167,18 @@
                 <i class="fas fa-lightbulb me-1 text-warning"></i>
                 Display this on the projector for students to scan
             </small>
+        </div>
+        {% elif qr_expired %}
+        <!-- QR Code Expired -->
+        <div class="qr-showcase text-center">
+            <div class="py-4">
+                <i class="fas fa-qrcode fa-4x text-danger mb-3" style="opacity: 0.5;"></i>
+                <h5 class="text-danger mb-2">QR Code Expired</h5>
+                <p class="text-muted mb-4">The QR code has expired. Click the button below to generate a new one.</p>
+                <button class="btn btn-primary btn-lg regenerate-btn" id="regenerateQR">
+                    <i class="fas fa-sync-alt me-2"></i> Generate New QR
+                </button>
+            </div>
         </div>
         {% else %}
         <!-- No Active Lecture -->
@@ -196,7 +204,7 @@ document.getElementById('regenerateQR')?.addEventListener('click', function() {
     
     // Add refreshing animation
     btn.classList.add('refreshing');
-    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Regenerating...';
+    btn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Generating...';
     btn.disabled = true;
 
     fetch('/qr/api/regenerate/', {
@@ -206,34 +214,21 @@ document.getElementById('regenerateQR')?.addEventListener('click', function() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            const img = document.querySelector('.qr-code-image');
-            if (img) {
-                img.src = data.qr_image_url;
-                // Flash effect
-                img.parentElement.parentElement.classList.add('success-flash');
-                setTimeout(() => {
-                    img.parentElement.parentElement.classList.remove('success-flash');
-                }, 500);
-            }
-            const timer = document.getElementById('qrTimer');
-            if (timer) timer.dataset.expiry = data.expiry_time;
-            
-            const ring = document.getElementById('timerRing');
-            if (ring) ring.classList.remove('warning', 'expired');
-            
-            startQRTimer();
-            showToast('QR Code refreshed successfully', 'success');
+            // Reload the page to get the new QR code and timer
+            window.location.reload();
+        } else {
+            showToast('Failed to generate QR code', 'error');
+            btn.classList.remove('refreshing');
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
         }
     })
-    .finally(() => {
+    .catch(err => {
+        showToast('Error generating QR code', 'error');
         btn.classList.remove('refreshing');
         btn.innerHTML = originalHTML;
         btn.disabled = false;
     });
 });
-
-// Update expiry seconds countdown
-// Timer logic is handled by startQRTimer() in main.js
-// This avoids duplicate intervals that would cause the timer to tick twice as fast
 </script>
 {% endblock %}

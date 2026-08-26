@@ -150,8 +150,6 @@ function initQRCodePage() {
  */
 let qrCountdown;
 let qrExpiryTime;
-let qrAutoRefreshAttempts = 0;
-const MAX_AUTO_REFRESH_ATTEMPTS = 3;
 
 function startQRTimer() {
     const timerElement = document.getElementById('qrTimer');
@@ -159,7 +157,6 @@ function startQRTimer() {
 
     // Get expiry time from data attribute
     qrExpiryTime = new Date(timerElement.dataset.expiry).getTime();
-    qrAutoRefreshAttempts = 0;
     
     // Clear any existing interval
     if (qrCountdown) clearInterval(qrCountdown);
@@ -195,14 +192,10 @@ function updateQRTimer() {
         }
         
         if (expiryText) {
-            expiryText.innerHTML = '<i class="fas fa-exclamation-circle me-1 text-danger"></i><span class="text-danger">QR has expired</span>';
+            expiryText.innerHTML = '<i class="fas fa-exclamation-circle me-1 text-danger"></i><span class="text-danger">QR has expired - Click Generate New QR</span>';
         }
         
-        // Auto-refresh QR code (with limit)
-        if (qrAutoRefreshAttempts < MAX_AUTO_REFRESH_ATTEMPTS) {
-            qrAutoRefreshAttempts++;
-            autoRefreshQR();
-        }
+        // Don't auto-refresh - let user click the button
         return;
     }
 
@@ -229,49 +222,7 @@ function updateQRTimer() {
     }
 }
 
-/**
- * Auto-refresh QR code when expired
- */
-function autoRefreshQR() {
-    $.ajax({
-        url: '/qr/api/regenerate/',
-        type: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        success: function(data) {
-            if (data.success) {
-                // Update QR image
-                const qrImage = document.getElementById('qrImage');
-                if (qrImage) {
-                    qrImage.src = data.qr_image_url;
-                    qrImage.classList.add('success-flash');
-                    setTimeout(() => qrImage.classList.remove('success-flash'), 500);
-                }
-                
-                // Update timer
-                const timerElement = document.getElementById('qrTimer');
-                if (timerElement) {
-                    timerElement.dataset.expiry = data.expiry_time;
-                    timerElement.classList.remove('text-danger', 'text-warning');
-                    timerElement.classList.add('text-primary');
-                }
-                
-                // Update timer ring
-                const timerRing = document.getElementById('timerRing');
-                if (timerRing) {
-                    timerRing.classList.remove('expired', 'warning');
-                }
-                
-                qrAutoRefreshAttempts = 0;
-                startQRTimer();
-                showToast('QR Code refreshed successfully', 'success');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('Error refreshing QR code:', error);
-            showToast('Failed to refresh QR code. Please click Regenerate.', 'error');
-        }
-    });
-}
+
 
 /**
  * Show toast notification

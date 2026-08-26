@@ -34,31 +34,36 @@ class GenerateQRView(LoginRequiredMixin, TemplateView):
         context['active_lecture'] = active_lecture
 
         if active_lecture:
-            # Get or create active QR session
+            # Get active QR session (don't auto-create)
             qr_session = QRCodeSession.objects.filter(
                 lecture=active_lecture,
                 is_active=True
             ).first()
 
-            if not qr_session or qr_session.is_expired():
-                from django.conf import settings
-                expiry = getattr(settings, 'ATTENDX_QR_EXPIRY_SECONDS', 60)
-                qr_session = QRCodeSession.create_session(active_lecture, expiry)
+            # Check if session exists and is not expired
+            if qr_session and not qr_session.is_expired():
+                context['qr_session'] = qr_session
+                context['qr_expired'] = False
 
-            context['qr_session'] = qr_session
+                # Generate QR image as base64
+                qr_url = f"{self.request.scheme}://{self.request.get_host()}/attendance/scan/{qr_session.token}/"
+                qr_img = qrcode.make(qr_url)
+                buffer = io.BytesIO()
+                qr_img.save(buffer, format='PNG')
+                qr_b64 = base64.b64encode(buffer.getvalue()).decode()
+                context['qr_image'] = qr_b64
 
-            # Generate QR image as base64
-            qr_url = f"{self.request.scheme}://{self.request.get_host()}/attendance/scan/{qr_session.token}/"
-            qr_img = qrcode.make(qr_url)
-            buffer = io.BytesIO()
-            qr_img.save(buffer, format='PNG')
-            qr_b64 = base64.b64encode(buffer.getvalue()).decode()
-            context['qr_image'] = qr_b64
-
-            # Calculate remaining time
-            remaining = (qr_session.expires_at - timezone.now()).total_seconds()
-            context['remaining_seconds'] = max(0, int(remaining))
-            context['expiry_time'] = qr_session.expires_at.isoformat()
+                # Calculate remaining time
+                remaining = (qr_session.expires_at - timezone.now()).total_seconds()
+                context['remaining_seconds'] = max(0, int(remaining))
+                context['expiry_time'] = qr_session.expires_at.isoformat()
+            else:
+                # No active QR or expired - show expired state
+                context['qr_session'] = qr_session
+                context['qr_expired'] = True
+                context['remaining_seconds'] = 0
+                if qr_session:
+                    context['expiry_time'] = qr_session.expires_at.isoformat()
 
         return context
 
