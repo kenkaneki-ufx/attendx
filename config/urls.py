@@ -7,7 +7,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('__debug__/', include('debug_toolbar.urls')),
     path('admin/', admin.site.urls),
     
     # Core app
@@ -47,6 +46,13 @@ urlpatterns = [
     # System settings
     path('system/', include('apps.system.urls')),
 ]
+
+# Debug toolbar (development only)
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
 
 # Serve media files in development
 if settings.DEBUG:
