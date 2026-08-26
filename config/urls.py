@@ -5,13 +5,9 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from apps.core.views_seed import seedaktu_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
-    # Temporary: Seed AKTU data (remove after use)
-    path('seedaktu/', seedaktu_view, name='seedaktu'),
     
     # Core app
     path('', include('apps.core.urls')),
