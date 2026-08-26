@@ -1,27 +1,124 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Page Not Found - AttendX{% endblock %}
 
 {% block auth_content %}
-<div class="text-center py-5">
-    <i class="fas fa-exclamation-triangle fa-4x text-warning mb-3"></i>
-    <h1 class="display-4">404</h1>
-    <h3>Page Not Found</h3>
-    <p class="text-muted">The page you're looking for doesn't exist or has been moved.</p>
-    <a href="{% url 'core:home' %}" class="btn btn-primary">
-        <i class="fas fa-home me-1"></i> Go Home
-    </a>
+<!-- Dark Mode Toggle -->
+<div class="position-absolute" style="top: 20px; right: 20px; z-index: 10;">
+    <button type="button" class="btn btn-outline-secondary dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+        <i class="fas fa-moon"></i>
+    </button>
 </div>
+
+<div class="text-center">
+    <!-- Animated 404 Icon -->
+    <div class="mb-4" style="position: relative;">
+        <i class="fas fa-qrcode fa-4x text-primary mb-3" style="opacity: 0.3; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);"></i>
+        <div style="width: 120px; height: 120px; margin: 0 auto; position: relative;">
+            <div style="width: 100%; height: 100%; border: 4px solid var(--primary-color, #4F46E5); border-radius: 20px; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+                <span style="font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #4F46E5, #7C3AED); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">404</span>
+            </div>
+        </div>
+    </div>
+    
+    <h2 class="mb-3" style="font-weight: 700;">Page Not Found</h2>
+    <p class="text-muted mb-4" style="max-width: 400px; margin: 0 auto;">
+        Oops! The page you're looking for doesn't exist or has been moved. 
+        It might have been deleted or the URL might be incorrect.
+    </p>
+    
+    <!-- Action Buttons -->
+    <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center mb-4">
+        <a href="{% url 'core:home' %}" class="btn btn-primary px-4">
+            <i class="fas fa-home me-2"></i> Go to Home
+        </a>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary px-4">
+            <i class="fas fa-arrow-left me-2"></i> Go Back
+        </a>
+    </div>
+    
+    <!-- Quick Links -->
+    <div class="mt-4 pt-4" style="border-top: 1px solid var(--border-color, rgba(0,0,0,0.1));">
+        <p class="text-muted small mb-3">Or try one of these pages:</p>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <a href="{% url 'accounts:login' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-sign-in-alt me-1"></i> Faculty Login
+            </a>
+            <a href="{% url 'students:portal' %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-user-graduate me-1"></i> Student Portal
+            </a>
+            <a href="/admin/" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-cog me-1"></i> Admin Panel
+            </a>
+        </div>
+    </div>
+    
+    <!-- Fun QR Code Graphic -->
+    <div class="mt-5">
+        <svg width="100" height="100" viewBox="0 0 100 100" style="opacity: 0.15;">
+            <rect x="10" y="10" width="25" height="25" fill="currentColor"/>
+            <rect x="65" y="10" width="25" height="25" fill="currentColor"/>
+            <rect x="10" y="65" width="25" height="25" fill="currentColor"/>
+            <rect x="15" y="15" width="15" height="15" fill="white"/>
+            <rect x="70" y="15" width="15" height="15" fill="white"/>
+            <rect x="15" y="70" width="15" height="15" fill="white"/>
+            <rect x="18" y="18" width="9" height="9" fill="currentColor"/>
+            <rect x="73" y="18" width="9" height="9" fill="currentColor"/>
+            <rect x="18" y="73" width="9" height="9" fill="currentColor"/>
+            <rect x="45" y="10" width="10" height="10" fill="currentColor"/>
+            <rect x="45" y="45" width="10" height="10" fill="currentColor"/>
+            <rect x="10" y="45" width="10" height="10" fill="currentColor"/>
+            <rect x="65" y="45" width="10" height="10" fill="currentColor"/>
+            <rect x="45" y="65" width="10" height="10" fill="currentColor"/>
+            <rect x="80" y="45" width="10" height="10" fill="currentColor"/>
+            <rect x="45" y="80" width="10" height="10" fill="currentColor"/>
+            <rect x="80" y="80" width="10" height="10" fill="currentColor"/>
+        </svg>
+    </div>
+</div>
+
+<style>
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.02); opacity: 0.8; }
+    }
+    
+    .auth-container {
+        max-width: 500px !important;
+    }
+</style>
 {% endblock %}
 
-{% block content %}
-<div class="text-center py-5">
-    <i class="fas fa-exclamation-triangle fa-4x text-warning mb-3"></i>
-    <h1 class="display-4">404</h1>
-    <h3>Page Not Found</h3>
-    <p class="text-muted">The page you're looking for doesn't exist or has been moved.</p>
-    <a href="{% url 'dashboard:faculty_dashboard' %}" class="btn btn-primary">
-        <i class="fas fa-home me-1"></i> Go to Dashboard
-    </a>
-</div>
+{% block extra_js %}
+<script>
+// Dark mode toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+const body = document.body;
+const icon = darkModeToggle.querySelector('i');
+
+// Check for saved preference or system preference
+const savedMode = localStorage.getItem('attendx-dark-mode');
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+if (savedMode === 'dark' || (!savedMode && prefersDark)) {
+    body.classList.add('dark-mode');
+    icon.classList.remove('fa-moon');
+    icon.classList.add('fa-sun');
+}
+
+darkModeToggle.addEventListener('click', function() {
+    body.classList.toggle('dark-mode');
+    
+    if (body.classList.contains('dark-mode')) {
+        localStorage.setItem('attendx-dark-mode', 'dark');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    } else {
+        localStorage.setItem('attendx-dark-mode', 'light');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+    }
+});
+</script>
 {% endblock %}
