@@ -23,18 +23,19 @@ class Command(BaseCommand):
         academic_year = '2025-2026'
         
         # Faculty to subject assignments based on timetable
+        # Note: Database uses KCS/KAS/KNC prefix codes
         assignments = [
             # (username, subject_code)
-            ('anshika.yadav', 'BCS302'),    # Computer Organization
-            ('anshika.yadav', 'BCS352'),    # CO Lab
-            ('dileep.gupta', 'BCS303'),     # Discrete Structures
-            ('sarita.maurya', 'BCC302'),    # Python Programming
-            ('abhinav.verma', 'BAS303'),    # Maths IV
-            ('anita.pal', 'BCS301'),        # Data Structure
-            ('anita.pal', 'BCS351'),        # DS Lab
-            ('manju.singh', 'BAS301'),      # Technical Communication
-            ('pankaj.gupta', 'BCS353'),     # Web Design Workshop
-            ('kamal.tiwari', 'BCC351'),     # Internship Assessment
+            ('anshika.yadav', 'KCS302'),    # Computer Organization
+            ('anshika.yadav', 'KCS352'),    # CO Lab
+            ('dileep.gupta', 'KCS303'),     # Discrete Structures
+            ('sarita.maurya', 'KNC402'),    # Python Programming
+            ('abhinav.verma', 'KAS302'),    # Maths IV
+            ('anita.pal', 'KCS301'),        # Data Structure
+            ('anita.pal', 'KCS351'),        # DS Lab
+            ('manju.singh', 'KAS301'),      # Technical Communication
+            ('pankaj.gupta', 'KCS353'),     # Web Design Workshop
+            ('kamal.tiwari', 'KCS354'),     # Internship Assessment
         ]
         
         created_count = 0
