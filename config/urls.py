@@ -6,11 +6,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from apps.core.views_seed_timetable import seedtimetable_view
+from apps.core.views_seed import seedaktu_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # Temporary: Seed CS21 timetable
+    # Temporary: Seed AKTU data and timetable
+    path('seedaktu/', seedaktu_view, name='seedaktu'),
     path('seedtimetable/', seedtimetable_view, name='seedtimetable'),
     
     # Core app
