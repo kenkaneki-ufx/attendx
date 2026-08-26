@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from apps.lectures.models_timetable import TimeSlot, Timetable
 
 
 class Lecture(models.Model):
