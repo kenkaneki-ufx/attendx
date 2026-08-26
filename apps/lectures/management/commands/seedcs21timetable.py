@@ -35,13 +35,19 @@ class Command(BaseCommand):
             status = 'Created' if created else 'Exists'
             self.stdout.write(f'  {status}: {slot}')
 
-        # ========== GET SECTION CS21 ==========
-        try:
-            section = Section.objects.get(name='CS21')
-            self.stdout.write(f'\n  Found section: {section}')
-        except Section.DoesNotExist:
-            self.stdout.write(self.style.ERROR('  Section CS21 not found! Run seedaktu first.'))
-            return
+# ========== GET SECTION CS21 ==========
+# Section name format: CS{semester}{section_num} e.g., CS31 for semester 3, section 1
+try:
+    section = Section.objects.get(name='CS31')
+    self.stdout.write(f'\n  Found section: {section}')
+except Section.DoesNotExist:
+    # Try alternative names
+    section = Section.objects.filter(name__startswith='CS', semester=3).first()
+    if section:
+        self.stdout.write(f'\n  Found section: {section}')
+    else:
+        self.stdout.write(self.style.ERROR('  Section CS31 not found! Run seedaktu first.'))
+        return
 
         # ========== GET SUBJECTS ==========
         subjects = {}
