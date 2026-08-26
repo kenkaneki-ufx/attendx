@@ -14,7 +14,7 @@ def update_section_view(request):
     
     try:
         out = StringIO()
-        call_command('update_student_section', stdout=out)
+        call_command('fix_cs21', stdout=out)
         output = out.getvalue()
         return JsonResponse({
             'success': True,
