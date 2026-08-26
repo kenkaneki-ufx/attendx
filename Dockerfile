@@ -30,5 +30,14 @@ COPY . .
 # Expose port (Koyeb will use $PORT)
 EXPOSE 8000
 
-# Start command - run migrations and start gunicorn
-CMD sh -c "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 4 --timeout 120"
+# Copy startup script
+COPY start.sh .
+RUN chmod +x start.sh
+
+# Default superuser credentials (can be overridden via env vars)
+ENV SUPERUSER_USERNAME=admin
+ENV SUPERUSER_EMAIL=admin@attendx.com
+ENV SUPERUSER_PASSWORD=admin123
+
+# Start command
+CMD ["./start.sh"]
