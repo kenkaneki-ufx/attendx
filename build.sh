@@ -2,6 +2,9 @@
 # exit on error
 set -o errexit
 
+# Set Django settings for build
+export DJANGO_SETTINGS_MODULE=config.settings.production
+
 # Install dependencies
 pip install -r requirements.txt
 
