@@ -136,7 +136,7 @@ body {
     position: relative;
 }
 
-..content-wrapper {
+.content-wrapper {
     opacity: 1;
 }
 
@@ -1420,29 +1420,88 @@ html {
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;
-        padding: 16px;
+        padding: 16px 12px;
     }
     
     .sidebar {
         transform: translateX(-100%);
         width: var(--sidebar-width);
+        box-shadow: none;
     }
     
     .sidebar.show {
         transform: translateX(0);
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Sidebar overlay */
+    .sidebar.show::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
     }
     
     .attendance-counter {
         font-size: 2rem;
+        padding: 16px;
+    }
+    
+    .stat-card {
+        padding: 14px;
+        margin-bottom: 12px;
     }
     
     .stat-card .stat-value {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
+    }
+    
+    .stat-card .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .stat-card .icon-box {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
     }
     
     .navbar-nav .nav-link {
         padding: 8px 10px;
         font-size: 0.82rem;
+    }
+    
+    .card-body {
+        padding: 16px;
+    }
+    
+    .card-header {
+        padding: 14px 16px;
+    }
+    
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .btn-lg {
+        padding: 12px 24px;
+        font-size: 0.95rem;
+    }
+    
+    .quick-action-btn {
+        padding: 14px 10px;
+    }
+    
+    .quick-action-btn i {
+        font-size: 1.4rem;
+    }
+    
+    .quick-action-btn span {
+        font-size: 0.75rem;
     }
 }
 
