@@ -11,8 +11,10 @@
 </div>
 
 <div class="text-center mb-4">
-    <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
-    <h2>Student Login</h2>
+    <a href="{% url 'core:home' %}" class="text-decoration-none">
+        <i class="fas fa-user-graduate fa-3x text-primary mb-3"></i>
+        <h2>Student Login</h2>
+    </a>
     <p class="text-muted">Enter your roll number and password to access your dashboard</p>
 </div>
 
@@ -73,8 +75,11 @@
         <i class="fas fa-search me-1"></i> Check attendance without login
     </a>
     <br>
-    <a href="/" class="text-decoration-none mt-2 d-inline-block">
-        <i class="fas fa-arrow-left me-1"></i> Back to Home
+    <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-sm mt-3">
+        <i class="fas fa-chalkboard-teacher me-1"></i> Faculty Login
+    </a>
+    <a href="{% url 'core:home' %}" class="btn btn-outline-secondary btn-sm mt-3 ms-2">
+        <i class="fas fa-home me-1"></i> Home
     </a>
 </div>
 {% endblock %}

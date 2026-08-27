@@ -1,14 +1,404 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}AttendX - Home{% endblock %}
+{% block title %}AttendX - QR Code Attendance System{% endblock %}
 
-{% block content %}
-<div class="text-center py-5">
-    <i class="fas fa-qrcode fa-4x text-primary mb-3"></i>
-    <h2>Welcome to AttendX</h2>
-    <p class="text-muted">QR Code Attendance System</p>
-    <a href="{% url 'dashboard:faculty_dashboard' %}" class="btn btn-primary">
-        Go to Dashboard
-    </a>
+{% block full_page %}
+<!-- Landing Page - No Sidebar/Navbar -->
+<div class="landing-page">
+    <!-- Hero Section -->
+    <div class="landing-hero">
+        <div class="landing-container">
+            <!-- Logo & Brand -->
+            <div class="landing-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h1 class="brand-title">AttendX</h1>
+                <p class="brand-subtitle">QR Code Attendance System</p>
+            </div>
+
+            <!-- Login Cards -->
+            <div class="login-cards">
+                <!-- Faculty Login Card -->
+                <a href="{% url 'accounts:login' %}" class="login-card faculty-card">
+                    <div class="login-card-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h2 class="login-card-title">Faculty Login</h2>
+                    <p class="login-card-desc">Manage lectures, generate QR codes, and track attendance</p>
+                    <div class="login-card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+
+                <!-- Student Login Card -->
+                <a href="{% url 'students:student_login' %}" class="login-card student-card">
+                    <div class="login-card-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h2 class="login-card-title">Student Login</h2>
+                    <p class="login-card-desc">View attendance records and scan QR codes</p>
+                    <div class="login-card-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Quick Scan Option for Students -->
+            <div class="quick-scan-section">
+                <p class="quick-scan-text">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Students can also scan QR codes directly during lectures without logging in
+                </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="landing-footer">
+                <p>&copy; 2026 AttendX. QR Code Attendance System.</p>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+/* Landing Page Styles */
+.landing-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.landing-page::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    border-radius: 50%;
+}
+
+.landing-page::after {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
+    bottom: -150px;
+    left: -150px;
+    border-radius: 50%;
+}
+
+.landing-container {
+    max-width: 480px;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+/* Brand */
+.landing-brand {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.brand-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+    box-shadow: 0 10px 40px rgba(99, 102, 241, 0.4);
+}
+
+.brand-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.brand-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Login Cards */
+.login-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.login-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.login-card:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.login-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.faculty-card .login-card-icon {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: white;
+}
+
+.student-card .login-card-icon {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: white;
+}
+
+.login-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.login-card-desc {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0;
+    line-height: 1.4;
+}
+
+.login-card-arrow {
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.login-card:hover .login-card-arrow {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: translateX(4px);
+}
+
+/* Quick Scan Section */
+.quick-scan-section {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 32px;
+}
+
+.quick-scan-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.88rem;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+/* Footer */
+.landing-footer {
+    text-align: center;
+}
+
+.landing-footer p {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.8rem;
+    margin-bottom: 0;
+}
+
+/* Dark Mode Toggle on Landing */
+.dark-mode-toggle-landing {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.dark-mode-toggle-landing:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 576px) {
+    .landing-page {
+        padding: 16px;
+    }
+    
+    .brand-icon {
+        width: 64px;
+        height: 64px;
+        font-size: 2rem;
+    }
+    
+    .brand-title {
+        font-size: 2rem;
+    }
+    
+    .login-card {
+        padding: 16px;
+    }
+    
+    .login-card-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+    
+    .login-card-title {
+        font-size: 1rem;
+    }
+    
+    .login-card-desc {
+        font-size: 0.8rem;
+    }
+}
+
+/* Dark Mode Support */
+body.dark-mode .landing-page {
+    background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #111111 100%);
+}
+
+body.dark-mode .login-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+body.dark-mode .login-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .quick-scan-section {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .login-card-arrow {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .login-card:hover .login-card-arrow {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Theme Colors */
+body[data-theme="rose"] .faculty-card .login-card-icon {
+    background: linear-gradient(135deg, #fb7185 0%, #f472b6 100%);
+}
+
+body[data-theme="emerald"] .faculty-card .login-card-icon {
+    background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%);
+}
+
+body[data-theme="amber"] .faculty-card .login-card-icon {
+    background: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%);
+}
+
+body[data-theme="cyan"] .faculty-card .login-card-icon {
+    background: linear-gradient(135deg, #22d3ee 0%, #60a5fa 100%);
+}
+</style>
+
+<!-- Dark Mode Toggle -->
+<button class="dark-mode-toggle-landing" id="darkModeToggleLanding" aria-label="Toggle dark mode">
+    <i class="fas fa-moon" id="darkModeIconLanding"></i>
+</button>
+
+<script>
+// Landing page dark mode
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('darkModeToggleLanding');
+    const icon = document.getElementById('darkModeIconLanding');
+    
+    if (!toggle || !icon) return;
+    
+    // Check for saved preference
+    const savedTheme = localStorage.getItem('attendx-dark-mode') || localStorage.getItem('attendx-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.body.classList.add('dark-mode');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    }
+    
+    toggle.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        
+        if (document.body.classList.contains('dark-mode')) {
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+            localStorage.setItem('attendx-dark-mode', 'dark');
+            localStorage.setItem('attendx-theme', 'dark');
+        } else {
+            icon.classList.remove('fa-sun');
+            icon.classList.add('fa-moon');
+            localStorage.setItem('attendx-dark-mode', 'light');
+            localStorage.setItem('attendx-theme', 'light');
+        }
+    });
+    
+    // Apply accent color
+    var accent = localStorage.getItem('attendx-accent-color') || 'indigo';
+    document.body.setAttribute('data-theme', accent);
+});
+</script>
 {% endblock %}

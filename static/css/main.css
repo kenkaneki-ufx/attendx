@@ -153,9 +153,23 @@ body {
     color: #fff;
     overflow-y: auto;
     overflow-x: hidden;
-    z-index: 1000;
+    z-index: 1050;
     transition: width var(--transition-base), transform var(--transition-base);
     border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Sidebar overlay for mobile */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
 }
 
 .sidebar::-webkit-scrollbar {
@@ -1411,6 +1425,10 @@ html {
         display: none !important;
     }
     
+    .sidebar .nav-link-section-title {
+        display: none;
+    }
+    
     .main-content {
         margin-left: 72px;
         padding: 20px;
@@ -1427,6 +1445,7 @@ html {
         transform: translateX(-100%);
         width: var(--sidebar-width);
         box-shadow: none;
+        z-index: 1050;
     }
     
     .sidebar.show {
@@ -1435,25 +1454,36 @@ html {
     }
     
     /* Sidebar overlay */
-    .sidebar.show::after {
-        content: '';
+    .sidebar-overlay {
+        display: none;
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
         background: rgba(0, 0, 0, 0.5);
-        z-index: -1;
+        z-index: 1040;
     }
     
-    .attendance-counter {
-        font-size: 2rem;
-        padding: 16px;
+    .sidebar.show ~ .sidebar-overlay {
+        display: block;
     }
     
+    /* Welcome section mobile */
+    .welcome-section {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+    
+    .welcome-section .btn {
+        width: 100%;
+    }
+    
+    /* Stats cards 2x2 grid on mobile */
     .stat-card {
         padding: 14px;
-        margin-bottom: 12px;
+        min-height: 80px;
     }
     
     .stat-card .stat-value {
@@ -1470,11 +1500,53 @@ html {
         font-size: 1rem;
     }
     
-    .navbar-nav .nav-link {
-        padding: 8px 10px;
-        font-size: 0.82rem;
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
     }
     
+    .attendance-counter {
+        font-size: 2rem;
+        padding: 16px;
+    }
+    
+    /* Navbar mobile */
+    .navbar {
+        padding: 0 12px;
+    }
+    
+    .navbar-toggler {
+        padding: 8px 12px;
+        min-width: 44px;
+        min-height: 44px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+    }
+    
+    .navbar-toggler:focus {
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+    
+    .navbar-toggler .navbar-toggler-icon {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* User avatar in navbar */
+    .avatar-circle {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Cards mobile */
     .card-body {
         padding: 16px;
     }
@@ -1492,30 +1564,78 @@ html {
         font-size: 0.95rem;
     }
     
+    /* Quick actions mobile */
     .quick-action-btn {
-        padding: 14px 10px;
+        padding: 16px 10px;
+        min-height: 80px;
     }
     
     .quick-action-btn i {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
     }
     
     .quick-action-btn span {
-        font-size: 0.75rem;
+        font-size: 0.78rem;
+    }
+    
+    /* Lecture items mobile */
+    .lecture-item {
+        padding: 14px;
+    }
+    
+    .lecture-timeline {
+        padding-left: 24px;
+    }
+    
+    /* Better touch targets */
+    .dropdown-item {
+        padding: 12px 16px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Alert mobile */
+    .alert {
+        padding: 14px 16px;
+        font-size: 0.85rem;
     }
 }
 
 @media (max-width: 576px) {
     .stat-card {
-        padding: 16px;
+        padding: 12px;
     }
     
     .stat-card .stat-value {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
+    }
+    
+    .stat-card .icon-box {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+    }
+    
+    .stat-card .stat-icon {
+        font-size: 2rem;
     }
     
     .quick-action-btn {
-        padding: 14px 10px;
+        padding: 12px 8px;
+    }
+    
+    .quick-action-btn i {
+        font-size: 1.2rem;
+    }
+    
+    .quick-action-btn span {
+        font-size: 0.7rem;
+    }
+    
+    /* Smaller welcome text on mobile */
+    h4 {
+        font-size: 1.1rem !important;
     }
 }
 

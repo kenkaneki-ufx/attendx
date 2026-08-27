@@ -6,10 +6,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 class HomeView(TemplateView):
     """
     Home page view.
-    - Unauthenticated users see the landing page
+    - Unauthenticated users see the landing page with login options
     - Authenticated users are redirected to the dashboard
     """
-    template_name = 'core/landing.html'
+    template_name = 'core/home.html'
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:

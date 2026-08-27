@@ -547,6 +547,7 @@ function initDarkMode() {
  */
 function initMobileSidebar() {
     const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
     // The first toggler (d-lg-none) is for the sidebar
     const sidebarToggler = document.querySelector('.navbar-toggler.d-lg-none');
     
@@ -557,7 +558,18 @@ function initMobileSidebar() {
         e.preventDefault();
         e.stopPropagation();
         sidebar.classList.toggle('show');
+        if (sidebarOverlay) {
+            sidebarOverlay.style.display = sidebar.classList.contains('show') ? 'block' : 'none';
+        }
     });
+    
+    // Close sidebar when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            sidebarOverlay.style.display = 'none';
+        });
+    }
     
     // Close sidebar when clicking outside on mobile
     document.addEventListener('click', function(e) {
@@ -565,6 +577,7 @@ function initMobileSidebar() {
             !sidebar.contains(e.target) && 
             !sidebarToggler.contains(e.target)) {
             sidebar.classList.remove('show');
+            if (sidebarOverlay) sidebarOverlay.style.display = 'none';
         }
     });
     
@@ -573,6 +586,7 @@ function initMobileSidebar() {
         link.addEventListener('click', function() {
             if (window.innerWidth < 768) {
                 sidebar.classList.remove('show');
+                if (sidebarOverlay) sidebarOverlay.style.display = 'none';
             }
         });
     });
@@ -581,6 +595,7 @@ function initMobileSidebar() {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && sidebar.classList.contains('show')) {
             sidebar.classList.remove('show');
+            if (sidebarOverlay) sidebarOverlay.style.display = 'none';
         }
     });
 }

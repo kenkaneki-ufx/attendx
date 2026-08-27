@@ -149,6 +149,10 @@ body.dark-mode .sidebar-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+body.dark-mode .sidebar-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
 body.dark-mode .user-avatar {
     color: #22d3ee;
     filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.4));

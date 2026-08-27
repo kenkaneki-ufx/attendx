@@ -48,6 +48,7 @@
     {% if request.user.is_authenticated or request.session.is_student %}
         {% include 'includes/navbar.html' %}
         {% include 'includes/sidebar.html' %}
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
         
         <main class="main-content">
             <div class="container-fluid">
