@@ -24,6 +24,7 @@
         font-size: 1.1rem;
         font-weight: 600;
         color: white;
+        flex-shrink: 0;
     }
     .status-badge {
         font-size: 0.75rem;
@@ -75,12 +76,112 @@
     .toggle-switch {
         cursor: pointer;
     }
+    
+    /* Mobile responsive styles */
+    @media (max-width: 768px) {
+        .faculty-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px;
+        }
+        .faculty-header .btn {
+            width: 100%;
+        }
+        .filter-form .col-md-5,
+        .filter-form .col-md-3,
+        .filter-form .col-md-1 {
+            width: 100%;
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+        .filter-form .form-label {
+            margin-bottom: 4px;
+        }
+        /* Hide non-essential table columns on mobile */
+        .hide-mobile {
+            display: none !important;
+        }
+        /* Mobile card view for table rows */
+        .faculty-mobile-card {
+            display: block;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+        .faculty-mobile-card .faculty-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .faculty-mobile-card .faculty-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .faculty-mobile-card .faculty-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        .faculty-mobile-card .faculty-email {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .faculty-mobile-card .faculty-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .faculty-mobile-card .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .faculty-mobile-card .meta-item i {
+            width: 14px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        .faculty-mobile-card .faculty-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+        .faculty-mobile-card .faculty-actions .btn {
+            flex: 1;
+        }
+        /* Table wrapper scroll hint */
+        .table-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 30px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8));
+            pointer-events: none;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .faculty-mobile-card .faculty-meta {
+            flex-direction: column;
+            gap: 6px;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 faculty-header">
     <div>
         <h4 class="mb-1"><i class="fas fa-user-tie me-2 text-primary"></i>Faculty Management</h4>
         <small class="text-muted">Manage faculty members and their roles</small>
@@ -93,7 +194,7 @@
 <!-- Search & Filters -->
 <div class="card mb-4">
     <div class="card-body">
-        <form method="get" class="row g-3 align-items-end">
+        <form method="get" class="row g-3 align-items-end filter-form">
             <div class="col-md-5">
                 <label class="form-label small text-muted">Search</label>
                 <div class="search-wrapper">
@@ -131,15 +232,15 @@
     </div>
 </div>
 
-<!-- Faculty Table -->
-<div class="table-wrapper">
+<!-- Faculty Table (Desktop) -->
+<div class="table-wrapper d-none d-md-block">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
             <thead>
                 <tr>
                     <th>Faculty</th>
-                    <th>Employee ID</th>
-                    <th>Department</th>
+                    <th class="hide-mobile">Employee ID</th>
+                    <th class="hide-mobile">Department</th>
                     <th>Role</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
@@ -159,8 +260,8 @@
                             </div>
                         </div>
                     </td>
-                    <td><code>{{ member.employee_id }}</code></td>
-                    <td>{{ member.department|default:"-" }}</td>
+                    <td class="hide-mobile"><code>{{ member.employee_id }}</code></td>
+                    <td class="hide-mobile">{{ member.department|default:"-" }}</td>
                     <td>
                         {% if member.is_admin %}
                         <span class="badge bg-danger-subtle text-danger">Admin</span>
@@ -207,6 +308,64 @@
             </tbody>
         </table>
     </div>
+</div>
+
+<!-- Faculty Cards (Mobile) -->
+<div class="d-md-none">
+    {% for member in faculty_list %}
+    <div class="faculty-mobile-card">
+        <div class="faculty-main">
+            <div class="faculty-avatar" style="background: hsl({{ forloop.counter0|add:20 }}, 60%, 55%);">
+                {{ member.first_name.0 }}{{ member.last_name.0 }}
+            </div>
+            <div class="faculty-info">
+                <div class="faculty-name">{{ member.get_full_name }}</div>
+                <div class="faculty-email">{{ member.email }}</div>
+            </div>
+        </div>
+        <div class="faculty-meta">
+            <div class="meta-item">
+                <i class="fas fa-id-badge"></i>
+                <span>{{ member.employee_id }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-building"></i>
+                <span>{{ member.department|default:"-" }}</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-user-tag"></i>
+                <span>
+                    {% if member.is_admin %}Admin
+                    {% elif member.is_staff %}Staff
+                    {% else %}Faculty
+                    {% endif %}
+                </span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-circle" style="font-size: 0.5rem; color: {% if member.is_active %}var(--success-color){% else %}var(--text-muted){% endif %};"></i>
+                <span>{% if member.is_active %}Active{% else %}Inactive{% endif %}</span>
+            </div>
+        </div>
+        <div class="faculty-actions">
+            <a href="{% url 'faculty:faculty_edit' member.pk %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit me-1"></i> Edit
+            </a>
+            <button class="btn btn-sm btn-{% if member.is_active %}outline-warning{% else %}outline-success{% endif %} toggle-status-btn"
+                    data-id="{{ member.pk }}">
+                <i class="fas fa-{% if member.is_active %}ban{% else %}check{% endif %} me-1"></i>
+                {% if member.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="fas fa-user-tie fa-3x text-muted mb-3 d-block" style="opacity: 0.3;"></i>
+        <p class="text-muted mb-0">No faculty members found</p>
+        <a href="{% url 'faculty:faculty_create' %}" class="btn btn-sm btn-primary mt-3">
+            <i class="fas fa-plus me-1"></i> Add First Faculty
+        </a>
+    </div>
+    {% endfor %}
 </div>
 
 <!-- Pagination -->

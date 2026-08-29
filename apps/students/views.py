@@ -110,8 +110,8 @@ class StudentRequiredMixin:
 
 
 class StudentDashboardView(StudentRequiredMixin, TemplateView):
-    """Student dashboard showing attendance history and charts."""
-    template_name = 'students/dashboard.html'
+    """Student single-page portal with scan, details, and attendance."""
+    template_name = 'students/student_portal.html'
 
     def get(self, request, *args, **kwargs):
         from .models import Student

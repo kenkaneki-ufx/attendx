@@ -47,10 +47,12 @@
     <div class="page-loading-bar" id="pageLoadingBar"></div>
     {% if request.user.is_authenticated or request.session.is_student %}
         {% include 'includes/navbar.html' %}
-        {% include 'includes/sidebar.html' %}
-        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        {% if request.user.is_authenticated and not request.session.is_student %}
+            {% include 'includes/sidebar.html' %}
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        {% endif %}
         
-        <main class="main-content">
+        <main class="main-content {% if request.session.is_student %}student-layout{% endif %}">
             <div class="container-fluid">
                 {% include 'includes/messages.html' %}
                 

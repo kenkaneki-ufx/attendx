@@ -1673,3 +1673,17 @@ html {
         scroll-behavior: auto !important;
     }
 }
+
+/* =============================================
+   STUDENT LAYOUT - No Sidebar
+   ============================================= */
+.student-layout {
+    margin-left: 0 !important;
+    padding: 16px 12px !important;
+}
+
+@media (min-width: 769px) {
+    .student-layout {
+        padding: 24px 32px !important;
+    }
+}
