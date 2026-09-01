@@ -21,11 +21,30 @@ class FacultyListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
     login_url = '/accounts/login/'
     paginate_by = 20
 
+    # Allowed sort fields and their directions
+    SORT_FIELDS = {
+        'name': 'first_name',
+        'email': 'email',
+        'employee_id': 'employee_id',
+        'department': 'department__name',
+        'role': 'is_admin',
+        'status': 'is_active',
+    }
+
+    def get_paginate_by(self, queryset):
+        """Allow per_page parameter to override default."""
+        per_page = self.request.GET.get('per_page', '')
+        if per_page and per_page.isdigit() and int(per_page) in [10, 20, 50, 100]:
+            return int(per_page)
+        return self.paginate_by
+
     def get_queryset(self):
         queryset = Faculty.objects.all().select_related('department')
         search = self.request.GET.get('search', '').strip()
         status = self.request.GET.get('status', '')
         department = self.request.GET.get('department', '')
+        sort_by = self.request.GET.get('sort', 'name')
+        sort_dir = self.request.GET.get('dir', 'asc')
 
         if search:
             queryset = queryset.filter(
@@ -46,6 +65,14 @@ class FacultyListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         if department:
             queryset = queryset.filter(department_id=department)
 
+        # Apply sorting
+        if sort_by in self.SORT_FIELDS:
+            field = self.SORT_FIELDS[sort_by]
+            if sort_dir == 'desc':
+                queryset = queryset.order_by(f'-{field}')
+            else:
+                queryset = queryset.order_by(field)
+
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -53,8 +80,12 @@ class FacultyListView(AdminRequiredMixin, LoginRequiredMixin, ListView):
         context['search'] = self.request.GET.get('search', '')
         context['status_filter'] = self.request.GET.get('status', '')
         context['department_filter'] = self.request.GET.get('department', '')
+        context['sort_by'] = self.request.GET.get('sort', 'name')
+        context['sort_dir'] = self.request.GET.get('dir', 'asc')
+        context['paginate_by'] = self.get_paginate_by(None)
         from apps.departments.models import Department
         context['departments'] = Department.objects.all()
+        context['total_count'] = self.get_queryset().count()
         return context
 
 
