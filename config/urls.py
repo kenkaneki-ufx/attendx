@@ -43,15 +43,6 @@ urlpatterns = [
     
     # QR Codes
     path('qr/', include('apps.qr_codes.urls')),
-    
-    # Reports
-    path('reports/', include('apps.reports.urls')),
-    
-    # Analytics
-    path('analytics/', include('apps.analytics.urls')),
-    
-    # System settings
-    path('system/', include('apps.system.urls')),
 ]
 
 # Debug toolbar (development only)

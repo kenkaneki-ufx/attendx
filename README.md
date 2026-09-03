@@ -1,142 +1,70 @@
-# AttendX - QR Code Attendance System
+# AttendX — QR Code Attendance System
 
-A web-based attendance management system using QR codes for easy and accurate attendance tracking.
+College mini project. Attendance for lectures, marked by scanning a QR code with your phone — instead of someone calling out sixty names and marking a register.
 
-## 🎯 Features
+**Live:** https://attendx.onrender.com (free tier, so it might take a few seconds to wake up on first load)
 
-### For Faculty
-- **QR Code Generation** - Generate unique QR codes for each lecture
-- **Live Attendance** - See students check in real-time
-- **Dashboard** - View attendance statistics and reports
-- **Student Management** - Manage student records and sections
+## How it works
 
-### For Students
-- **Mobile QR Scanner** - Scan QR codes to mark attendance
-- **Attendance Portal** - View attendance history and statistics
-- **Subject-wise Reports** - Check attendance per subject
+A faculty member starts a lecture from the dashboard. The app generates a QR code that's valid for a short window (60 seconds by default), and it shows up on the screen. Students point their phone camera at it — the code is just a link to `/attendance/scan/<token>/` — and the page marks them present (or late) and tells them the result. On the faculty side the counts update live, so you can watch the room fill in as people scan.
 
-## 🛠️ Tech Stack
+A few things I added because college WiFi is what it is:
 
-| Component | Technology |
-|-----------|------------|
-| Backend | Django (Python) |
-| Database | PostgreSQL (Supabase) |
-| Frontend | Bootstrap 5 + HTML/CSS |
-| QR Codes | qrcode + Pillow |
-| Hosting | Render |
+- QR tokens expire and can't be reused after the window closes.
+- One scan per student per lecture — duplicates are ignored.
+- Scanning is rate limited per IP, so nobody scripts the whole class in two seconds.
+- A lecture has to actually be in progress for a scan to count.
 
-## 🚀 Quick Start
+## Who uses it
 
-### Local Development
+- **Admin** — manages faculty, students, sections, subjects and the faculty–subject assignments.
+- **Faculty** — dashboard, start/end lectures, generate QR, live attendance, "my subjects", lecture history.
+- **Student** — look up their portal by roll number, or log in with roll number + password to scan and see subject-wise attendance and history.
+
+## Tech
+
+Django 5 with SQLite locally (Postgres/Supabase in production), Bootstrap 5 templates, `qrcode` + Pillow for the codes. Served on Render with WhiteNoise handling static files.
+
+## Running it locally
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/kenkaneki-ufx/AttendX.git
+git clone https://github.com/kenkaneki-ufx/attendx.git
 cd AttendX
 
-# 2. Create virtual environment
 python -m venv venv
-venv\Scripts\activate  # Windows
+venv\Scripts\activate          # Windows; on Linux/mac: source venv/bin/activate
 
-# 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Set up environment
-cp .env.example .env
-# Edit .env with your database credentials
-
-# 5. Run migrations
 python manage.py migrate
-
-# 6. Create superuser
 python manage.py createsuperuser
-
-# 7. Start server
 python manage.py runserver
 ```
 
-### Access Points
+Then open http://127.0.0.1:8000.
 
-| URL | Description |
-|-----|-------------|
-| `http://localhost:8000/` | Home page |
-| `http://localhost:8000/admin/` | Django Admin |
-| `http://localhost:8000/faculty/dashboard/` | Faculty Dashboard |
-| `http://localhost:8000/students/login/` | Student Login |
+There are a couple of seed commands if you want sample AKTU CSE data (departments, branches, sections, subjects):
 
-## 📱 How It Works
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Faculty   │────▶│  Generate   │────▶│  Display    │
-│   Login     │     │  QR Code    │     │  on Screen  │
-└─────────────┘     └─────────────┘     └─────────────┘
-                                                 │
-                                                 ▼
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  Attendance │◀────│   Verify    │◀────│   Student   │
-│  Marked ✓   │     │   & Mark    │     │  Scan QR    │
-└─────────────┘     └─────────────┘     └─────────────┘
+```bash
+python manage.py seedaktu       # run this first
+python manage.py seedfaculty
 ```
 
-## 🗂️ Project Structure
+### A database gotcha
 
-```
-AttendX/
-├── apps/
-│   ├── accounts/      # User authentication
-│   ├── attendance/    # Attendance records
-│   ├── faculty/       # Faculty management
-│   ├── lectures/      # Lecture scheduling
-│   ├── qr_codes/      # QR code generation
-│   ├── students/      # Student management
-│   └── subjects/      # Subject management
-├── templates/         # HTML templates
-├── static/           # CSS, JS, images
-└── config/           # Django settings
-```
+The repo has a `.env` file whose `DATABASE_URL` points at the Supabase Postgres used by the deployed app. If you're working offline or just want the local SQLite database, comment that line out (or run commands with `DATABASE_URL=`) and Django falls back to `db.sqlite3`.
 
-## 🔐 User Roles
+## Where things live
 
-| Role | Access |
-|------|--------|
-| **Admin** | Full access to all features |
-| **Faculty** | Generate QR, view attendance, manage lectures |
-| **Student** | Scan QR, view own attendance |
+- `apps/` — one Django app per concern: accounts (faculty login), students, sections, subjects, lectures, attendance, qr_codes, plus departments/branches for the academic hierarchy and small core/common helpers.
+- `templates/` — Bootstrap HTML.
+- `config/` — settings split into base / development / production.
+- Logs go to `logs/django.log` (the folder is created automatically).
 
-## 📊 Database Schema (Simplified)
+The data model basically runs Department → Branch → Section → Student, and faculty are assigned to a subject + section for an academic year. Lectures happen against those assignments, and every QR session belongs to one lecture.
 
-```
-Faculty ──┬── Lecture ──┬── AttendanceRecord
-          │            │
-Subject ──┘            └── QRCodeSession
-                                
-Student ──────────────────┘
-```
+## What I'd add with more time
 
-## 🚀 Deployment
+Geofencing so scanning only works inside the classroom, push notifications when a lecture starts, and maybe a real mobile app instead of phone-camera scanning. The QR-based flow works fine for a demo, though.
 
-The app is deployed on **Render**:
-- **URL**: https://attendx.onrender.com
-- **Database**: PostgreSQL (Supabase)
-
-## 💡 Future Enhancements
-
-| Feature | Description |
-|---------|-------------|
-| 📍 **Geofencing** | Location-based attendance verification |
-| 📸 **Facial Recognition** | AI-powered student identification |
-| 🔔 **Push Notifications** | Real-time attendance alerts |
-| 📈 **Advanced Analytics** | Predictive attendance insights |
-| 📱 **Mobile App** | Native iOS/Android application |
-| 🌐 **Offline Mode** | Work without internet |
-| 📧 **Email Reports** | Automated attendance reports |
-| 🔄 **Biometric Integration** | Fingerprint/face ID verification |
-
-## 📝 License
-
-MIT License - Free to use for educational purposes
-
----
-
-**Mini Project** - QR Code Based Attendance System
+MIT licensed.

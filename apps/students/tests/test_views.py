@@ -168,7 +168,7 @@ class StudentDashboardViewTest(TestCase):
         self._login_student()
         response = self.client.get(self.dashboard_url)
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'students/dashboard.html')
+        self.assertTemplateUsed(response, 'students/student_portal.html')
 
     def test_dashboard_context_data(self):
         """Test dashboard provides correct context data."""

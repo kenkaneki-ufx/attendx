@@ -47,10 +47,7 @@ LOCAL_APPS = [
     'apps.lectures.apps.LecturesConfig',
     'apps.attendance.apps.AttendanceConfig',
     'apps.qr_codes.apps.QrCodesConfig',
-    'apps.reports.apps.ReportsConfig',
-    'apps.analytics.apps.AnalyticsConfig',
     'apps.dashboard.apps.DashboardConfig',
-    'apps.system.apps.SystemConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -216,6 +213,9 @@ CACHES = {
 
 
 # Logging Configuration
+# Ensure the logs directory exists for the file handler
+(BASE_DIR / 'logs').mkdir(parents=True, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
